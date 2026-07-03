@@ -216,6 +216,11 @@ func (t *CommitChapterTool) Schema() map[string]any {
 		schema.Property("hook_type", schema.Enum("Loại điểm móc cuối chương", "crisis", "mystery", "desire", "emotion", "choice")),
 		schema.Property("dominant_strand", schema.Enum("Tuyến kể chủ đạo của chương này", "quest", "fire", "constellation")),
 		schema.Property("feedback", feedbackSchema),
+		schema.Property("self_review", schema.Object(
+			schema.Property("strengths", schema.Array("1-3 điểm mạnh của chương này đáng giữ lại", schema.String(""))),
+			schema.Property("weaknesses", schema.Array("1-3 điểm yếu của chương này cần sửa ở chương sau", schema.String(""))),
+			schema.Property("lesson", schema.String("Bài học cụ thể tự rút ra sau khi đọc lại chương, áp dụng ngay cho chương sau (tự tiến hóa)")),
+		)),
 	)
 }
 
@@ -233,6 +238,7 @@ func (t *CommitChapterTool) Execute(_ context.Context, args json.RawMessage) (js
 		HookType            string                     `json:"hook_type"`
 		DominantStrand      string                     `json:"dominant_strand"`
 		Feedback            *domain.OutlineFeedback    `json:"feedback"`
+		SelfReview          *domain.SelfReview         `json:"self_review"`
 	}
 	if err := json.Unmarshal(args, &a); err != nil {
 		return nil, fmt.Errorf("invalid args: %w: %w", errs.ErrToolArgs, err)
@@ -384,6 +390,18 @@ func (t *CommitChapterTool) Execute(_ context.Context, args json.RawMessage) (js
 	// 5. Cập nhật tiến độ
 	if err := t.store.Progress.MarkChapterComplete(a.Chapter, wordCount, a.HookType, a.DominantStrand); err != nil {
 		return nil, fmt.Errorf("mark chapter complete: %w: %w", errs.ErrStoreWrite, err)
+	}
+
+	// 5b. OmniForge self-absorption: lưu tự review của Người viết (nếu có) để feed bài học tới chương sau.
+	if a.SelfReview != nil && strings.TrimSpace(a.SelfReview.Lesson) != "" {
+		sr := *a.SelfReview
+		sr.Chapter = a.Chapter
+		if sr.CreatedAt == "" {
+			sr.CreatedAt = time.Now().Format(time.RFC3339)
+		}
+		if err := t.store.World.SaveSelfReview(a.Chapter, sr); err != nil {
+			slog.Warn("không lưu được self_review", "module", "omni-hook", "chapter", a.Chapter, "err", err)
+		}
 	}
 
 	// 6. Kiểm tra xem có cần xét duyệt không

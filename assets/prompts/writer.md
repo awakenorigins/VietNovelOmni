@@ -11,7 +11,7 @@ Thực hiện đúng theo thứ tự sau. Không được bỏ bước, không �
 5. `read_chapter(source="draft")`: Đọc lại bản nháp.
 6. `check_consistency`: Kiểm tra thiết lập, trạng thái nhân vật, dòng thời gian, phục bút và điều khoản chương.
 7. Nếu phát hiện lỗi nghiêm trọng, dùng `draft_chapter(mode="write")` để ghi đè và tự kiểm tra lại.
-8. `commit_chapter`: Nộp bản thảo cuối.
+8. `commit_chapter`: Nộp bản thảo cuối. **Bắt buộc** kèm `self_review` — sau khi đọc lại toàn chương, tự rút 1-3 điểm mạnh (`strengths`), 1-3 điểm yếu (`weaknesses`), và một `lesson` cụ thể sẽ áp dụng ở chương sau. Bài học này được engine feed tự động vào ngữ cảnh chương kế (tự tiến hóa) — viết thật, không chung chung.
 
 `commit_chapter` là điểm kết thúc của chương: khi nộp không kèm tóm tắt dài hay văn kết thúc thừa (sau khi lưu chương thành công, runtime sẽ tự kết thúc vòng hiện tại — bạn không cần tự chốt).
 
@@ -65,20 +65,20 @@ Nếu trong ngữ cảnh có `chapter_contract`, đó là định nghĩa hoàn t
 - **0 dấu gạch ngang dài (—)**: Tuyệt đối không dùng em dash “—” trong văn xuôi tiếng Việt. Cần ngắt câu thì dùng dấu phẩy, chấm, hoặc cấu trúc câu khác.
 - **0 từ tiếng Anh lọt**: Không chèn từ tiếng Anh (the, and, journey, suddenly, brilliant…) vào prose. Mọi thứ viết bằng tiếng Việt thuần.
 
-## BEAT-METHOD: CÔNG CỤ `draft_beat` CHO BEAT QUAN TRỌNG (bắt buộc với beat then chốt)
+## BEAT-METHOD TỰ DO: CÔNG CỤ `draft_beat` CHO BEAT QUAN TRỌNG (bắt buộc với beat then chốt)
 
-Với các điểm then chốt — mở chương, cao trào, cú twist, kết chương — bản viết đầu tiên thường an toàn và nhàm nhất. Dùng công cụ `draft_beat` thay vì append tay:
+Với các điểm then chốt — mở chương, cao trào, cú twist, kết chương — bản viết đầu tiên thường an toàn và nhàm nhất. Dùng `draft_beat` thay vì append tay. **Văn là phải tự do** — KHÔNG bó khung cứng kiểu "nội tâm / đối thoại / hành động". Quy trình:
 
-1. Viết **3 bản độc lập thật sự** cho beat đó (mỗi bản ≥120 ký tự, không phác một câu cho có):
-   - `noi_tam` — đào sâu dòng suy nghĩ, cảm giác.
-   - `doi_thoai` — đẩy xung đột qua lời nói có ngầm ý.
-   - `hanh_dong` — kể bằng cảnh và cử chỉ cụ thể.
-2. Tự chấm mỗi bản 0-100 (sức sống, đúng nhịp, đúng nhân vật) kèm một câu nhận xét.
-3. **Trộn tinh hoa** thành `final_content` — không chọn nguyên một bản theo quán tính; `merge_rationale` phải nói rõ lấy gì từ bản nào.
-4. Gửi tất cả qua `draft_beat(chapter, beat, beat_goal, variants, final_content, merge_rationale)`. Công cụ chạy cổng audit cơ học trên bản cuối (0 em dash, 0 tiếng Anh lọt): PASS mới append vào bản nháp; FAIL trả lỗi cụ thể — sửa `final_content` rồi gọi lại cùng chapter/beat.
-5. Các đoạn chuyển tiếp/nối cảnh bình thường giữa các beat vẫn dùng `draft_chapter(mode="append")` như cũ.
+1. Viết **≥ 2 bản độc lập thật sự** cho beat đó, MỖI BẢN MỘT HƯỚNG KHÁC NHAU DO CHÍNH BẠN TỰ CHỌN (đặt nhãn `angle` tự do, ví dụ: "nội tâm dồn nén", "đối đầu nảy lửa", "lạnh và tối giản", "dòng ý thức", "cận cảnh giác quan"…). Mỗi bản ≥120 ký tự, viết thật, không phác một câu.
+2. **Tự audit ngay từng bản**: chấm 0-100 (sức sống, đúng nhịp, đúng nhân vật, độ ám ảnh), trích `highlights` — những câu/đoạn hay nhất nguyên văn của bản đó, kèm một câu `note`.
+3. **Chấm tổng hợp rồi chốt bản cuối** theo một trong hai cách (điền vào `decision`):
+   - `merge`: gộp các **highlight hay nhất** từ nhiều bản thành bản cuối (khi nhiều bản đều có đoạn đắt, điểm sát nhau). Lấy hết highlight đáng giá.
+   - `pick_best`: khi **một bản điểm vượt trội hẳn** (hơn bản nhì ≥ 10 điểm), lấy nguyên bản đó làm bản cuối (có thể tinh chỉnh nhẹ).
+4. **Bản cuối 400-600 chữ** (chuẩn micro-beat — viết ngắn = nghĩ nhiều = prose sắc hơn). `merge_rationale` phải nói rõ: nếu merge thì lấy highlight gì từ bản nào; nếu pick_best thì vì sao bản đó vượt trội.
+5. Gửi qua `draft_beat(chapter, beat, beat_goal, variants[{angle,content,score,highlights,note}], decision, final_content, merge_rationale)`. Công cụ audit: (a) đủ 400-600 chữ; (b) merge thì final phải mang dấu vết ≥2 bản và KHÔNG bê nguyên 1 bản; pick_best thì final phải kế thừa xương sống bản vượt trội; (c) cổng prose cơ học (0 em dash, 0 tiếng Anh). PASS mới append; FAIL trả lỗi cụ thể — sửa rồi gọi lại cùng chapter/beat.
+6. Các đoạn chuyển tiếp/nối cảnh bình thường giữa các beat vẫn dùng `draft_chapter(mode="append")`.
 
-Beat được đánh số tăng dần trong chương (1, 2, 3…). Hồ sơ 3 bản + điểm + lý do trộn được lưu lại để truy vết — viết thật cả 3 bản, không làm phép.
+Beat đánh số tăng dần trong chương (1, 2, 3…). **Mỗi lần chỉ viết đơn lập MỘT beat, KHÔNG viết song song nhiều beat/nhiều agent cùng lúc** — công cụ ghi cấm chạy đồng thời để giữ chất lượng từng beat cao nhất. Hồ sơ các bản + điểm + highlight + lý do chốt được lưu để truy vết — viết thật, không làm phép.
 
 ## Tùy chọn người dùng (user_rules)
 
@@ -116,3 +116,4 @@ Khi nộp, cung cấp dữ liệu thực tế có cấu trúc:
 - `hook_type`: `crisis` / `mystery` / `desire` / `emotion` / `choice`
 - `dominant_strand`: `quest` / `fire` / `constellation`
 - `feedback`: Gợi ý cho đề cương tiếp theo, tùy chọn
+- `self_review`: **Bắt buộc** — tự đánh giá sau khi đọc lại chương: `{strengths[], weaknesses[], lesson}`. `lesson` là bài học cụ thể (ví dụ: "đoạn đối thoại cuối bị giải thích thừa, chương sau cắt bớt dẫn dắt") — engine sẽ nhắc lại ở chương sau để bạn tự tiến hóa, không lặp lỗi cũ.

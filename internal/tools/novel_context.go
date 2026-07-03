@@ -757,6 +757,19 @@ func (t *ContextTool) selectReviewLessons(chapter int, warn func(string, error))
 		items = append(items, item)
 	}
 
+	// OmniForge self-absorption: bài học Người viết tự rút ra từ chương liền trước được ưu tiên đầu — để tiến hóa ngay chương này.
+	if sr, err := t.store.World.LoadSelfReview(chapter - 1); err != nil {
+		warn("self_review", err)
+	} else if sr != nil && strings.TrimSpace(sr.Lesson) != "" {
+		add(domain.RecallItem{
+			Kind:    "self_lesson",
+			Key:     fmt.Sprintf("self-%d", sr.Chapter),
+			Chapter: sr.Chapter,
+			Reason:  "Bài học tự rút ra sau chương trước — áp dụng ngay để tiến hóa",
+			Summary: fmt.Sprintf("Tự rút kinh nghiệm từ chương %d: %s", sr.Chapter, truncateRunes(sr.Lesson, 60)),
+		})
+	}
+
 	appendReview := func(review *domain.ReviewEntry) bool {
 		if review == nil {
 			return false

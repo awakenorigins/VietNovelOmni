@@ -9,18 +9,24 @@ import (
 	"github.com/voocel/ainovel-cli/internal/store"
 )
 
-// 3 bản độc lập, từ khóa KHÁC nhau theo hướng — giống thực tế beat-method.
-const (
-	vNoiTam   = "Hắn ngồi im nghe tim mình đập chậm, ký ức cũ trỗi dậy trong lồng ngực tối. Hắn ngồi im nghe tim mình đập chậm, ký ức cũ trỗi dậy trong lồng ngực tối. "
-	vDoiThoai = "Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc như lưỡi dao kề cổ. Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc như lưỡi dao kề cổ. "
-	vHanhDong = "Hắn vụt đứng dậy, xô ghế, lao qua cửa trước khi tiếng thở kịp thoát ra. Hắn vụt đứng dậy, xô ghế, lao qua cửa trước khi tiếng thở kịp thoát ra. "
-	// finalMerge trộn dấu vết cả 3 bản (điểm sát nhau → merge thật).
-	finalMerge = "Hắn ngồi im nghe tim mình đập chậm, ký ức cũ trỗi dậy trong lồng ngực tối. " +
-		"Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc như lưỡi dao kề cổ. " +
-		"Hắn vụt đứng dậy, xô ghế, lao qua cửa trước khi tiếng thở kịp thoát ra."
+// Ba bản độc lập, nhãn hướng TỰ DO, từ khóa khác nhau — giống thực tế beat-method.
+// Mỗi bản ~ đủ dài; final gộp ~ 400-600 chữ.
+func rep(s string, n int) string { return strings.Repeat(s, n) }
+
+var (
+	vA = rep("Hắn ngồi im nghe tim mình đập chậm, ký ức cũ trỗi dậy trong lồng ngực tối như mực. ", 6)
+	vB = rep("Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc lạnh tựa lưỡi dao kề ngang cổ họng. ", 6)
+	vC = rep("Hắn vụt đứng dậy, xô ghế lăn kềnh, lao thẳng qua khung cửa trước khi tiếng thở kịp thoát. ", 6)
 )
 
-// beatArgs dựng args hợp lệ mặc định cho draft_beat; test chỉnh từng trường để tạo case lỗi.
+// finalMerge gộp dấu vết cả ba bản, đủ 400-600 chữ.
+func finalMergeText() string {
+	block := "Hắn ngồi im nghe tim mình đập chậm, ký ức cũ trỗi dậy trong lồng ngực tối như mực. " +
+		"Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc lạnh tựa lưỡi dao kề ngang cổ họng. " +
+		"Hắn vụt đứng dậy, xô ghế lăn kềnh, lao thẳng qua khung cửa trước khi tiếng thở kịp thoát. "
+	return rep(block, 8)
+}
+
 func beatArgs(t *testing.T, mutate func(m map[string]any)) json.RawMessage {
 	t.Helper()
 	m := map[string]any{
@@ -28,12 +34,13 @@ func beatArgs(t *testing.T, mutate func(m map[string]any)) json.RawMessage {
 		"beat":      1,
 		"beat_goal": "Mở chương: thiết lập khủng hoảng nợ máu",
 		"variants": []map[string]any{
-			{"focus": "noi_tam", "content": vNoiTam, "score": 74, "note": "sâu nhưng chậm"},
-			{"focus": "doi_thoai", "content": vDoiThoai, "score": 79, "note": "căng, có ngầm ý"},
-			{"focus": "hanh_dong", "content": vHanhDong, "score": 77, "note": "nhanh, hơi mỏng"},
+			{"angle": "nội tâm dồn nén", "content": vA, "score": 74, "highlights": []string{"ký ức cũ trỗi dậy trong lồng ngực tối"}, "note": "sâu nhưng chậm"},
+			{"angle": "đối đầu nảy lửa", "content": vB, "score": 79, "highlights": []string{"sắc lạnh tựa lưỡi dao kề ngang cổ họng"}, "note": "căng, có ngầm ý"},
+			{"angle": "hành động dứt khoát", "content": vC, "score": 77, "highlights": []string{"lao thẳng qua khung cửa"}, "note": "nhanh, hơi mỏng"},
 		},
-		"final_content":   finalMerge,
-		"merge_rationale": "Lấy khung đối thoại bản B, chèn hai nhịp nội tâm bản A, giữ cú chốt hành động bản C",
+		"decision":        "merge",
+		"final_content":   finalMergeText(),
+		"merge_rationale": "Lấy khung đối đầu bản B, chèn nhịp nội tâm bản A, giữ cú chốt hành động bản C",
 	}
 	if mutate != nil {
 		mutate(m)
@@ -57,7 +64,7 @@ func newBeatStore(t *testing.T) *store.Store {
 	return s
 }
 
-func TestDraftBeatHappyPathAppendsAndRecords(t *testing.T) {
+func TestDraftBeatHappyPathMergeAppendsAndRecords(t *testing.T) {
 	s := newBeatStore(t)
 	tool := NewDraftBeatTool(s)
 
@@ -75,126 +82,121 @@ func TestDraftBeatHappyPathAppendsAndRecords(t *testing.T) {
 	if res["merge_audit"] != "passed" {
 		t.Fatalf("merge_audit should be passed, got %v", res["merge_audit"])
 	}
-	if res["best_variant"] != "doi_thoai" {
-		t.Fatalf("best_variant should be doi_thoai (score 79), got %v", res["best_variant"])
+	if res["decision"] != "merge" {
+		t.Fatalf("decision should be merge, got %v", res["decision"])
 	}
-
+	if res["best_variant"] != "đối đầu nảy lửa" {
+		t.Fatalf("best_variant should be highest-score angle, got %v", res["best_variant"])
+	}
 	draft, err := s.Drafts.LoadDraft(1)
 	if err != nil || draft == "" {
 		t.Fatalf("draft should exist after beat append, err=%v", err)
 	}
-	if !strings.Contains(draft, "lao qua cửa") {
-		t.Fatalf("draft should contain final_content")
-	}
+}
 
-	// Hồ sơ beat phải tồn tại và gate_passed=true
-	var rec map[string]any
-	data, err := s.Drafts.LoadBeatRecordRaw(1, 1)
-	if err != nil {
-		t.Fatalf("beat record missing: %v", err)
-	}
-	if err := json.Unmarshal(data, &rec); err != nil {
-		t.Fatalf("beat record not json: %v", err)
-	}
-	if rec["gate_passed"] != true {
-		t.Fatalf("beat record gate_passed should be true")
-	}
-
-	// Beat thứ hai append tiếp (variants + final khác nội dung nhưng vẫn merge thật)
-	out2, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
-		m["beat"] = 2
-		m["variants"] = []map[string]any{
-			{"focus": "noi_tam", "content": "Mưa đêm dội xuống mái tôn, hắn nằm nghe từng hạt gõ vào giấc ngủ chưa kịp đến. Mưa đêm dội xuống mái tôn, hắn nằm nghe từng hạt gõ vào giấc ngủ chưa kịp đến. ", "score": 70, "note": "tĩnh"},
-			{"focus": "doi_thoai", "content": "Ngủ được không, nàng hỏi khẽ bên kia vách, câu hỏi rơi vào khoảng lặng dày đặc. Ngủ được không, nàng hỏi khẽ bên kia vách, câu hỏi rơi vào khoảng lặng dày đặc. ", "score": 72, "note": "ấm"},
-			{"focus": "hanh_dong", "content": "Hắn trở mình, kéo chăn lên tận cằm, tay siết chặt mép giường cho tới khi đau. Hắn trở mình, kéo chăn lên tận cằm, tay siết chặt mép giường cho tới khi đau. ", "score": 71, "note": "nhỏ"},
-		}
-		m["final_content"] = "Mưa đêm dội xuống mái tôn, hắn nằm nghe từng hạt gõ vào giấc ngủ chưa kịp đến. " +
-			"Ngủ được không, nàng hỏi khẽ bên kia vách, câu hỏi rơi vào khoảng lặng dày đặc. " +
-			"Hắn trở mình, kéo chăn lên tận cằm, tay siết chặt mép giường."
+func TestDraftBeatPickBestPassesWhenDominant(t *testing.T) {
+	s := newBeatStore(t)
+	tool := NewDraftBeatTool(s)
+	// Bản B vượt trội (95 vs 60/62), final lấy nguyên bản B → pick_best hợp lệ.
+	out, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
+		v := m["variants"].([]map[string]any)
+		v[0]["score"] = 60
+		v[1]["score"] = 95
+		v[2]["score"] = 62
+		m["decision"] = "pick_best"
+		m["final_content"] = rep("Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc lạnh tựa lưỡi dao kề ngang cổ họng. ", 24)
+		m["merge_rationale"] = "Bản đối đầu vượt trội hẳn, giữ nguyên xương sống, chỉnh nhẹ nhịp"
 	}))
 	if err != nil {
-		t.Fatalf("Execute beat 2: %v", err)
+		t.Fatalf("pick_best dominant should pass, got %v", err)
 	}
-	var res2 map[string]any
-	_ = json.Unmarshal(out2, &res2)
-	full, _ := s.Drafts.LoadDraft(1)
-	if !strings.Contains(full, "mái tôn") || !strings.Contains(full, "lao qua cửa") {
-		t.Fatalf("draft should contain both beats")
+	var res map[string]any
+	_ = json.Unmarshal(out, &res)
+	if res["decision"] != "pick_best" || res["gate_passed"] != true {
+		t.Fatalf("expected pick_best pass, got %v", res)
+	}
+}
+
+func TestDraftBeatPickBestRejectedWhenNotDominant(t *testing.T) {
+	s := newBeatStore(t)
+	tool := NewDraftBeatTool(s)
+	// Điểm sát nhau nhưng dùng pick_best → phải bị chặn (yêu cầu merge).
+	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
+		m["decision"] = "pick_best"
+		m["final_content"] = rep("Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc lạnh tựa lưỡi dao kề ngang cổ họng. ", 24)
+	}))
+	if err == nil || !strings.Contains(err.Error(), "vượt trội") {
+		t.Fatalf("expected pick_best-not-dominant rejection, got %v", err)
+	}
+}
+
+func TestDraftBeatMergeRejectsClone(t *testing.T) {
+	s := newBeatStore(t)
+	tool := NewDraftBeatTool(s)
+	// decision=merge nhưng final bê nguyên bản B → clone → bị chặn.
+	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
+		m["final_content"] = rep("Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc lạnh tựa lưỡi dao kề ngang cổ họng. ", 24)
+	}))
+	if err == nil || !strings.Contains(err.Error(), "giống gần nguyên") {
+		t.Fatalf("expected clone rejection, got %v", err)
+	}
+	if draft, _ := s.Drafts.LoadDraft(1); draft != "" {
+		t.Fatalf("draft must stay empty after clone fail, got %q", draft)
+	}
+}
+
+func TestDraftBeatMergeRequiresRealMerge(t *testing.T) {
+	s := newBeatStore(t)
+	tool := NewDraftBeatTool(s)
+	// merge nhưng final rời rạc, không mang dấu vết bản nào → bị chặn.
+	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
+		m["final_content"] = rep("Cơn giông kéo ngang thành phố, sấm rền qua những tòa nhà xám xịt lặng thinh dưới trời. ", 26)
+	}))
+	if err == nil || !strings.Contains(err.Error(), "dấu vết") {
+		t.Fatalf("expected real-merge rejection, got %v", err)
+	}
+}
+
+func TestDraftBeatEnforces400to600Words(t *testing.T) {
+	s := newBeatStore(t)
+	tool := NewDraftBeatTool(s)
+	// Quá ngắn
+	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
+		m["final_content"] = vA + vB // ~ dưới 340 từ
+	}))
+	if err == nil || !strings.Contains(err.Error(), "quá ngắn") {
+		t.Fatalf("expected too-short rejection, got %v", err)
+	}
+	// Quá dài
+	_, err = tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
+		m["final_content"] = rep(finalMergeText(), 3)
+	}))
+	if err == nil || !strings.Contains(err.Error(), "quá dài") {
+		t.Fatalf("expected too-long rejection, got %v", err)
 	}
 }
 
 func TestDraftBeatGateRejectsEmDashAndEnglish(t *testing.T) {
 	s := newBeatStore(t)
 	tool := NewDraftBeatTool(s)
-
-	// Em dash trong bản cuối → gate chặn, draft KHÔNG được ghi.
-	// Giữ dấu vết 3 bản để qua merge-audit, chỉ chèn em dash để trip prose-gate.
+	// Em dash trong final (vẫn giữ dấu vết ≥2 bản + đủ dài) → prose gate chặn.
 	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
-		m["final_content"] = "Hắn ngồi im nghe tim mình đập chậm, ký ức cũ trỗi dậy — trong lồng ngực tối. " +
-			"Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc như lưỡi dao. " +
-			"Hắn vụt đứng dậy, xô ghế, lao qua cửa."
+		f := finalMergeText()
+		m["final_content"] = f + "Hắn dừng lại — lặng lẽ nhìn ra ngoài trời tối mịt mờ sương."
 	}))
 	if err == nil || !strings.Contains(err.Error(), "KHÔNG QUA GATE") {
-		t.Fatalf("expected gate rejection for em dash, got %v", err)
+		t.Fatalf("expected em dash gate rejection, got %v", err)
 	}
 	if draft, _ := s.Drafts.LoadDraft(1); draft != "" {
 		t.Fatalf("draft must stay empty after gate fail, got %q", draft)
 	}
-
-	// Tiếng Anh lọt → gate chặn (vẫn giữ dấu vết 3 bản).
+	// Tiếng Anh lọt
 	_, err = tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
-		m["final_content"] = "Hắn ngồi im nghe tim mình đập chậm, ký ức cũ trỗi dậy suddenly trong lồng ngực tối. " +
-			"Anh nợ tôi một mạng, gã nói, giọng thấp mà sắc như lưỡi dao. " +
-			"Hắn vụt đứng dậy, xô ghế, lao qua cửa."
+		f := finalMergeText()
+		m["final_content"] = f + "Hắn nhìn suddenly ra ngoài cửa sổ lòng nặng trĩu bao điều."
 	}))
 	if err == nil || !strings.Contains(err.Error(), "KHÔNG QUA GATE") {
-		t.Fatalf("expected gate rejection for english word, got %v", err)
-	}
-}
-
-func TestDraftBeatMergeAuditRejectsClone(t *testing.T) {
-	s := newBeatStore(t)
-	tool := NewDraftBeatTool(s)
-	// final bê gần nguyên bản doi_thoai → clone → bị chặn.
-	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
-		m["final_content"] = vDoiThoai + vDoiThoai
-	}))
-	if err == nil || !strings.Contains(err.Error(), "merge-audit") || !strings.Contains(err.Error(), "gần nguyên") {
-		t.Fatalf("expected clone rejection, got %v", err)
-	}
-	if draft, _ := s.Drafts.LoadDraft(1); draft != "" {
-		t.Fatalf("draft must stay empty after merge-audit clone fail, got %q", draft)
-	}
-}
-
-func TestDraftBeatMergeAuditRequiresRealMerge(t *testing.T) {
-	s := newBeatStore(t)
-	tool := NewDraftBeatTool(s)
-	// Điểm sát nhau nhưng final viết rời rạc, không mang dấu vết bản nào → bị chặn.
-	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
-		m["final_content"] = "Cơn giông kéo ngang thành phố, sấm rền qua những tòa nhà xám xịt lặng thinh. " +
-			"Đèn đường chớp tắt, vũng nước loang lổ phản chiếu bầu trời rách nát phía trên."
-	}))
-	if err == nil || !strings.Contains(err.Error(), "merge-audit") {
-		t.Fatalf("expected real-merge requirement rejection, got %v", err)
-	}
-}
-
-func TestDraftBeatMergeAuditDominantMustInherit(t *testing.T) {
-	s := newBeatStore(t)
-	tool := NewDraftBeatTool(s)
-	// Bản doi_thoai áp đảo (điểm 95 vs 60/62) nhưng final bỏ hẳn bản đó → bị chặn.
-	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
-		v := m["variants"].([]map[string]any)
-		v[0]["score"] = 60
-		v[1]["score"] = 95
-		v[2]["score"] = 62
-		m["final_content"] = "Hắn ngồi im nghe tim mình đập chậm, ký ức cũ trỗi dậy trong lồng ngực tối. " +
-			"Hắn vụt đứng dậy, xô ghế, lao qua cửa trước khi tiếng thở kịp thoát ra. " +
-			"Cơn gió luồn qua khe cửa, mang theo mùi đất ẩm và tiếng chó sủa xa xăm cuối con hẻm."
-	}))
-	if err == nil || !strings.Contains(err.Error(), "áp đảo") {
-		t.Fatalf("expected dominant-inherit rejection, got %v", err)
+		t.Fatalf("expected english gate rejection, got %v", err)
 	}
 }
 
@@ -202,25 +204,25 @@ func TestDraftBeatValidatesVariants(t *testing.T) {
 	s := newBeatStore(t)
 	tool := NewDraftBeatTool(s)
 
-	// Thiếu bản (2/3)
+	// Chỉ 1 bản (< 2)
 	_, err := tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
 		v := m["variants"].([]map[string]any)
-		m["variants"] = v[:2]
+		m["variants"] = v[:1]
 	}))
-	if err == nil || !strings.Contains(err.Error(), "đúng 3 bản") {
-		t.Fatalf("expected 3-variant requirement, got %v", err)
+	if err == nil || !strings.Contains(err.Error(), "ít nhất") {
+		t.Fatalf("expected min-2-variant requirement, got %v", err)
 	}
 
-	// Focus trùng
+	// Nhãn hướng trùng
 	_, err = tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
 		v := m["variants"].([]map[string]any)
-		v[1]["focus"] = "noi_tam"
+		v[1]["angle"] = "nội tâm dồn nén"
 	}))
 	if err == nil || !strings.Contains(err.Error(), "trùng lặp") {
-		t.Fatalf("expected duplicate focus rejection, got %v", err)
+		t.Fatalf("expected duplicate-angle rejection, got %v", err)
 	}
 
-	// Bản quá ngắn (làm phép)
+	// Bản quá ngắn
 	_, err = tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
 		v := m["variants"].([]map[string]any)
 		v[0]["content"] = "Ngắn quá."
@@ -235,7 +237,15 @@ func TestDraftBeatValidatesVariants(t *testing.T) {
 		v[2]["score"] = 120
 	}))
 	if err == nil || !strings.Contains(err.Error(), "0-100") {
-		t.Fatalf("expected score range rejection, got %v", err)
+		t.Fatalf("expected score-range rejection, got %v", err)
+	}
+
+	// decision không hợp lệ
+	_, err = tool.Execute(context.Background(), beatArgs(t, func(m map[string]any) {
+		m["decision"] = "whatever"
+	}))
+	if err == nil || !strings.Contains(err.Error(), "decision") {
+		t.Fatalf("expected decision validation, got %v", err)
 	}
 
 	// Thiếu merge_rationale

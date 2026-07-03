@@ -292,6 +292,23 @@ func (s *WorldStore) HasArcReview(chapter int) bool {
 	return err == nil && rv != nil && rv.Scope == "arc"
 }
 
+// SaveSelfReview ghi tự review của Người viết sau khi hoàn thành chương (OmniForge — tự đọc lại + rút kinh nghiệm tời chương sau).
+func (s *WorldStore) SaveSelfReview(chapter int, sr domain.SelfReview) error {
+	return s.io.WriteJSON(fmt.Sprintf("reviews/%02d-self.json", chapter), sr)
+}
+
+// LoadSelfReview đọc tự review của Người viết cho chương đã chỉ định (nil nếu chưa có).
+func (s *WorldStore) LoadSelfReview(chapter int) (*domain.SelfReview, error) {
+	var sr domain.SelfReview
+	if err := s.io.ReadJSON(fmt.Sprintf("reviews/%02d-self.json", chapter), &sr); err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &sr, nil
+}
+
 // LoadReview đọc kết quả đánh giá của chương.
 func (s *WorldStore) LoadReview(chapter int) (*domain.ReviewEntry, error) {
 	var r domain.ReviewEntry

@@ -49,6 +49,16 @@ type DimensionScore struct {
 	Comment   string `json:"comment,omitempty"` // kết luận ngắn gọn cho chiều này
 }
 
+// SelfReview là tự đánh giá của Người viết sau khi hoàn thành MỖI chương:
+// tự đọc lại → rút kinh nghiệm để tiến hóa ở chương sau (OmniForge self-absorption).
+type SelfReview struct {
+	Chapter int      `json:"chapter"`
+	Strengths []string `json:"strengths,omitempty"`   // 1-3 điểm mạnh giữ lại
+	Weaknesses []string `json:"weaknesses,omitempty"` // 1-3 điểm yếu cần sửa
+	Lesson  string   `json:"lesson"`                 // bài học cụ thể áp dụng cho chương sau
+	CreatedAt string `json:"created_at,omitempty"`
+}
+
 // ReviewEntry điều mục đánh giá của Biên tập viên.
 type ReviewEntry struct {
 	Chapter          int                `json:"chapter"`
