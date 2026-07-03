@@ -24,6 +24,9 @@ import (
 //go:embed templates/*.html
 var tmplFS embed.FS
 
+//go:embed static
+var staticFS embed.FS
+
 var (
 	novelsDir string
 	templates *template.Template
@@ -786,6 +789,8 @@ func main() {
 	initApp()
 
 	mux := http.NewServeMux()
+	// Static art assets (embedded)
+	mux.Handle("GET /static/", http.FileServer(http.FS(staticFS)))
 	// Viewer (đọc)
 	mux.HandleFunc("GET /", handleIndex)
 	mux.HandleFunc("GET /novel/{slug}", handleNovelPage)
