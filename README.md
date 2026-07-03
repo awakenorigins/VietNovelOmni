@@ -1,11 +1,11 @@
-# ainovel-cli — Bản tiếng Việt
+# VietNovelOmni
 
-> **Fork tiếng Việt** của [voocel/ainovel-cli](https://github.com/voocel/ainovel-cli) — toàn bộ giao diện, prompt hệ thống và tài liệu đã được Việt hoá.
+> **Fork tiếng Việt** của [voocel/ainovel-cli](https://github.com/voocel/ainovel-cli) — toàn bộ giao diện, prompt hệ thống và tài liệu đã được Việt hoá, nâng cấp thành bộ engine viết tiểu thuyết dài autonomous chất lượng xuất bản.
 
-Công cụ CLI sáng tác tiểu thuyết dài kỳ hoàn toàn tự động bằng AI. Từ **một câu yêu cầu** đến **tiểu thuyết hoàn chỉnh** — không cần can thiệp thủ công trong quá trình viết.
+Công cụ sáng tác tiểu thuyết dài kỳ hoàn toàn tự động bằng AI. Từ **một câu yêu cầu** đến **tiểu thuyết hoàn chỉnh** — không cần can thiệp thủ công trong quá trình viết. Multi-agent (Coordinator/Architect/Writer/Editor), cổng chặn chất lượng prose Việt (0 em dash / 0 tiếng Anh), beat-method 3 bản + merge-audit, self-review mỗi chương, EPUB 3 premium.
 
 <p align="center">
-  <img src="scripts/sample.gif" alt="ainovel-cli demo" width="800">
+  <img src="scripts/sample.gif" alt="VietNovelOmni demo" width="800">
 </p>
 
 ---
