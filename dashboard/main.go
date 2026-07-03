@@ -379,7 +379,8 @@ func loadSummary(slug string) (NovelSummary, map[string]interface{}, json.RawMes
 		}
 	}
 
-	files := findChapterFiles(dir)
+	cdir := contentDir(dir)
+	files := findChapterFiles(cdir)
 	s.TotalChapters = len(files)
 
 	if progress != nil {
@@ -436,7 +437,7 @@ func loadSummary(slug string) (NovelSummary, map[string]interface{}, json.RawMes
 	if s.TotalWords == 0 {
 		total := 0
 		for _, f := range files {
-			if b, err := os.ReadFile(filepath.Join(dir, "chapters", f)); err == nil {
+			if b, err := os.ReadFile(filepath.Join(cdir, "chapters", f)); err == nil {
 				total += countWords(string(b))
 			}
 		}
@@ -504,11 +505,12 @@ func loadDetail(slug string) (NovelDetail, error) {
 	pending, pendingNames := pendingSet(progress)
 	d.PendingRewrite = pendingNames
 
-	files := findChapterFiles(dir)
+	cdir := contentDir(dir)
+	files := findChapterFiles(cdir)
 	for _, f := range files {
 		num, _ := chapterNumber(f)
 		ci := ChapterInfo{Number: num, File: f}
-		b, err := os.ReadFile(filepath.Join(dir, "chapters", f))
+		b, err := os.ReadFile(filepath.Join(cdir, "chapters", f))
 		if err == nil {
 			content := string(b)
 			ci.Words = countWords(content)
@@ -541,7 +543,7 @@ func loadDetail(slug string) (NovelDetail, error) {
 }
 
 func loadChapter(slug string, num int) (ChapterContent, error) {
-	dir := filepath.Join(novelsDir, slug)
+	dir := contentDir(filepath.Join(novelsDir, slug))
 	files := findChapterFiles(dir)
 	for _, f := range files {
 		if n, ok := chapterNumber(f); ok && n == num {
