@@ -130,6 +130,12 @@ func (t *DraftBeatTool) Execute(_ context.Context, args json.RawMessage) (json.R
 			utf8.RuneCountInString(final), minBeatFinalRunes, errs.ErrToolArgs)
 	}
 
+	// CỔNG MERGE-AUDIT (OmniForge Novel — audit merge/best) — chạy TRƯỚC gate prose.
+	// Ép bản cuối phải thực sự kế thừa tinh hoa 3 bản, không cho trộn qua loa / clone một bản.
+	if err := auditBeatMerge(a.Variants, final); err != nil {
+		return nil, err
+	}
+
 	// Cổng chương giống draft_chapter: đúng luồng, đúng hàng đợi.
 	if err := t.store.Progress.ValidateChapterWork(a.Chapter); err != nil {
 		return nil, err
@@ -201,6 +207,7 @@ func (t *DraftBeatTool) Execute(_ context.Context, args json.RawMessage) (json.R
 		"chapter":           a.Chapter,
 		"beat":              a.Beat,
 		"gate_passed":       true,
+		"merge_audit":       "passed",
 		"beat_word_count":   wordCount,
 		"draft_word_count":  utf8.RuneCountInString(full),
 		"best_variant":      best,
@@ -244,4 +251,131 @@ func bestVariantFocus(variants []beatVariant) string {
 		}
 	}
 	return best
+}
+
+// Ngưỡng cho merge-audit.
+const (
+	// dominantScoreGap: nếu bản cao nhất hơn bản nhì ≥ ngưỡng này → coi là "1 bản áp đảo",
+	// bản cuối bắt buộc kế thừa xương sống bản đó.
+	dominantScoreGap = 12
+	// dominantMinOverlap: tỉ lệ từ khóa của bản áp đảo phải còn trong final (0..1).
+	dominantMinOverlap = 0.30
+	// mergeMinContributors: khi điểm sát nhau, final phải mang dấu vết ≥ số bản này.
+	mergeMinContributors = 2
+	// mergeContribOverlap: ngưỡng overlap coi như "final có dấu vết bản X" (0..1).
+	mergeContribOverlap = 0.12
+	// cloneMaxOverlap: nếu final trùng gần như nguyên một bản (≥ ngưỡng) thì bị coi là clone.
+	cloneMaxOverlap = 0.85
+)
+
+// beatKeyword trích tập từ khóa (≥ 4 ký tự, đã hạ chữ thường) của một đoạn — dấu vân tay thô.
+func beatKeywords(s string) map[string]struct{} {
+	set := make(map[string]struct{})
+	var b strings.Builder
+	flush := func() {
+		if b.Len() == 0 {
+			return
+		}
+		w := b.String()
+		b.Reset()
+		if utf8.RuneCountInString(w) >= 4 {
+			set[w] = struct{}{}
+		}
+	}
+	for _, r := range strings.ToLower(s) {
+		if r == ' ' || r == '\n' || r == '\t' || r == '.' || r == ',' || r == '!' ||
+			r == '?' || r == ';' || r == ':' || r == '"' || r == '\'' || r == '(' ||
+			r == ')' || r == '—' || r == '-' {
+			flush()
+			continue
+		}
+		b.WriteRune(r)
+	}
+	flush()
+	return set
+}
+
+// overlapRatio: tỉ lệ từ khóa của src còn xuất hiện trong dst (|src ∩ dst| / |src|).
+func overlapRatio(src, dst map[string]struct{}) float64 {
+	if len(src) == 0 {
+		return 0
+	}
+	hit := 0
+	for k := range src {
+		if _, ok := dst[k]; ok {
+			hit++
+		}
+	}
+	return float64(hit) / float64(len(src))
+}
+
+// auditBeatMerge ép bản cuối thực sự audit-merge/best từ 3 bản:
+//   - Nếu 1 bản áp đảo (chênh điểm ≥ dominantScoreGap): final PHẢI kế thừa xương sống
+//     bản đó (overlap ≥ dominantMinOverlap).
+//   - Nếu điểm sát nhau: final PHẢI là merge thật — mang dấu vết ≥ mergeMinContributors bản,
+//     và KHÔNG được clone nguyên một bản (overlap mọi bản < cloneMaxOverlap).
+func auditBeatMerge(variants []beatVariant, final string) error {
+	finalKW := beatKeywords(final)
+	type vscan struct {
+		focus string
+		score int
+		// inherit: tỉ lệ tinh hoa bản còn trong final (|variant ∩ final| / |variant|) — dùng cho áp đảo + đóng góp.
+		inherit float64
+		// covers: tỉ lệ final được phủ bởi riêng bản này (|final ∩ variant| / |final|) — dùng cho clone-check.
+		covers float64
+	}
+	scans := make([]vscan, 0, len(variants))
+	for _, v := range variants {
+		vkw := beatKeywords(v.Content)
+		scans = append(scans, vscan{
+			focus:   v.Focus,
+			score:   v.Score,
+			inherit: overlapRatio(vkw, finalKW),
+			covers:  overlapRatio(finalKW, vkw),
+		})
+	}
+
+	// Tìm bản điểm cao nhất và nhì để xét áp đảo.
+	top, second := -1, -1
+	topIdx := -1
+	for i, s := range scans {
+		if s.score > top {
+			second = top
+			top = s.score
+			topIdx = i
+		} else if s.score > second {
+			second = s.score
+		}
+	}
+
+	// Clone-check: final không được được phủ gần toàn bộ bởi RIÊNG một bản
+	// (|final ∩ v| / |final| ≥ ngưỡng) — tức final chỉ là bản đó viết lại, không trộn gì.
+	for _, s := range scans {
+		if s.covers >= cloneMaxOverlap {
+			return fmt.Errorf("merge-audit: final giống gần nguyên bản %s (%.0f%% final đến từ riêng bản này) — phải trộn tinh hoa/nâng cấp, không bê nguyên một bản. Sửa final rồi gọi draft_beat lại: %w",
+				s.focus, s.covers*100, errs.ErrToolPrecondition)
+		}
+	}
+
+	if top-second >= dominantScoreGap && topIdx >= 0 {
+		// 1 bản áp đảo → final phải kế thừa xương sống bản đó (tinh hoa bản đó còn trong final).
+		if scans[topIdx].inherit < dominantMinOverlap {
+			return fmt.Errorf("merge-audit: bản %s áp đảo (điểm %d, hơn bản nhì %d) nhưng final chỉ giữ %.0f%% tinh hoa bản đó (tối thiểu %.0f%%) — final phải kế thừa xương sống bản mạnh nhất. Sửa final rồi gọi lại: %w",
+				scans[topIdx].focus, top, second, scans[topIdx].inherit*100, dominantMinOverlap*100, errs.ErrToolPrecondition)
+		}
+		return nil
+	}
+
+	// Điểm sát nhau → yêu cầu merge thật: ≥ mergeMinContributors bản có dấu vết trong final.
+	contributors := 0
+	for _, s := range scans {
+		if s.inherit >= mergeContribOverlap {
+			contributors++
+		}
+	}
+	if contributors < mergeMinContributors {
+		return fmt.Errorf("merge-audit: điểm 3 bản sát nhau nhưng final chỉ mang dấu vết %d/%d bản (cần ≥ %d) — phải trộn tinh hoa từ nhiều bản, không viết lại rời rạc. Sửa final rồi gọi lại: %w",
+			contributors, len(scans), mergeMinContributors, errs.ErrToolPrecondition)
+	}
+	return nil
 }
