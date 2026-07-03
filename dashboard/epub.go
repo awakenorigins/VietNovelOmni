@@ -202,7 +202,7 @@ func buildEPUB(outPath string, meta epubMeta, chapters []epubChapter) error {
 		cop = fmt.Sprintf("© %d %s. Mọi quyền được bảo lưu.", time.Now().Year(), who)
 	}
 	if err := add("OEBPS/copyright.xhtml", xhtmlPage("Bản quyền",
-		`<div class="copyright"><p>`+html.EscapeString(cop)+`</p><p>Xuất bản bởi OmniNovel Studio.</p></div>`)); err != nil {
+		`<div class="copyright"><p>`+html.EscapeString(cop)+`</p><p>Xuất bản bởi VietNovelOmni Studio.</p></div>`)); err != nil {
 		return err
 	}
 	spine = append(spine, item{"copyright", "copyright.xhtml", "Bản quyền"})

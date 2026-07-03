@@ -162,7 +162,7 @@ func authGate(next http.Handler) http.Handler {
 		}
 		if needAuth {
 			if !checkAuth(r) {
-				w.Header().Set("WWW-Authenticate", `Basic realm="OmniNovel"`)
+				w.Header().Set("WWW-Authenticate", `Basic realm="VietNovelOmni"`)
 				http.Error(w, "cần đăng nhập", http.StatusUnauthorized)
 				return
 			}
