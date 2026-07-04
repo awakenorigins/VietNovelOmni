@@ -77,5 +77,24 @@ Mọi thủ pháp là cách kéo gần/đẩy xa người đọc khỏi đầu n
 - **Suy biến chậm & bất lực:** nỗi kinh lớn nhất là biến đổi CHẬM không cưỡng lại được, nhìn cơ thể phản bội mình.
 - **Ghê rợn như gia vị:** một hình ảnh rợn đặt đúng chỗ hơn mười trang máu me; đổ gore liên tục → độc giả trơ lì.
 
+## G. TỪ NGỮ DỮ DỘI / VISCERAL WORD CHOICE (nâng câu "khá" lên "chấn động")
+> Câu thấu tim KHÔNG đến từ tính/trạng từ, mà từ ĐỘNG TỪ mang sát thương + danh từ cụ thể + âm chữ dữ + nhịp cụt. KIM CHỈ NAM: "lưỡi dao BAY NGANG không trung" (yếu) → "lưỡi dao XÉ TOẠC không trung" (dữ).
+- **Verb swap:** thay động từ trung tính bằng động từ có lực: bay→xé/rạch/lao, rơi→giáng/khuỵu, chảy→trào/phun, đi→lao/xộc, nhìn→trừng/xoáy, cầm→ghì/chộp.
+- **Nén trạng từ vào động từ:** "chạy rất nhanh"→"phóng", "nói rất to"→"gào", "rơi thật mạnh"→"giáng". Thấy động từ+trạng từ cường độ = đổi thành 1 động từ tự mạnh.
+- **Cụ thể hoá danh từ:** "âm thanh"→"tiếng xương gãy", "vũ khí"→"mũi lê", "vết thương"→"vết toác".
+- **Âm chữ dữ (word sound):** phụ âm bật /t/ /k/ /ch/ /x/ /đ/ nghe cứng-gằn-cắt; cùng nghĩa chọn từ nghe dữ (lướt→cứa, vỡ→nát bét). Cấm ép âm dữ vào cảnh êm.
+- **Trường nghĩa XÉ/TOÁC/NỨT:** khi bề mặt bị chia cắt (không khí, vải, da thịt, đất, kim loại): xé toạc, rạch, toác, nứt, bửa, bung, tướp.
+- **Động từ va chạm (impact):** chạm/nổ/gãy dùng động từ nghe được LỰC: giáng, bổ, quật, nện, táng, thúc, đâm ("nắm đấm giáng vào hàm, xương rắc").
+- **Chất lỏng áp lực:** máu/nước/lửa: trào, phun, vọt, xối, tuôn, ộc, liếm, trùm (không "chảy"). Lưu ý vật lý: lượng nhỏ đừng "phun thành tia".
+- **Ánh sáng/nhiệt bung:** sáng→bùng/loé/rực/rạch trời; nóng→thiêu/nung/bốc.
+- **Staccato punch:** câu cụt 2-4 từ, chấm liên tiếp tại cao trào ("Không còn thời gian. Cô bật dậy. Chạy."). Chỉ đau khi có nền câu dài trước (rhythm contrast).
+- **Tượng thanh chốt đòn:** chèn 1 từ tượng thanh cụt tách riêng (rắc, bốp, choang, ầm, xoẹt, huỵch) — một cảnh 1-2 tiếng đắt, đừng nhồi.
+- **Leo thang ngôn từ:** xếp động từ theo bậc tăng dần, đỉnh rơi CUỐI ("lửa liếm mép rèm → trườn lên trần → cả phòng hoá lò").
+- **Verb-driven line:** cắt "có/bị/được/là" và mệnh đề đệm ("trên trời có hàng nghìn mảnh kim loại đang bay" → "hàng nghìn mảnh kim loại xé ngang trời").
+> 2 LUẬT VÀNG chống phản tác dụng: (1) INTENSITY MATCH — cường độ từ phải tương xứng tầm vóc cảnh (vấp ngón chân mà "thế giới sụp đổ" = lố). (2) RESERVE THE PEAK — giữ 80% câu ở mức vừa-mạnh, dành 20% cho đỉnh; CẤM dùng "kinh hoàng/khủng khiếp/dữ dội/đau đớn tột cùng" như nhãn rỗng — thay bằng chi tiết thân xác cụ thể ("Cẳng chân người lính vẫn đứng đó, nhưng người lính thì không còn").
+
+### BẢNG ĐỘNG TỪ NÂNG CẤP (tra khi viết, chọn theo cảnh, không rải bừa):
+bay→xé toạc/rạch/lao/rít · rơi→giáng/khuỵu/đổ gục/sụp · chảy→trào/phun/vọt/ộc/xối · vỡ→nát bét/tan tành/nứt toác/bửa/tướp · sáng→bùng/loé/rực/rạch trời · đi→lao/phóng/xộc/chồm · đánh→giáng/bổ/quật/nện/táng · cắt→xẻ/phập/cứa/chém/khứa · đâm→cắm/xiên/thọc/ghim/xọc · nhìn→trừng/quắc/xoáy/chằm chằm · cầm→ghì/siết/quắp/chộp/vồ · kéo→giật/lôi xềnh xệch/giằng · đẩy→hất/tống/xô/đạp · hét→gào/rống/thét/gầm/rít · cháy→bùng/thiêu/nung/trùm/liếm · đau→cắm/xé/buốt/nhói/quặn · sợ→(ruột)thắt/(cổ)nghẹn/(máu)đông/ớn dọc sống lưng · giận→(máu)dồn/(hàm)nghiến/sôi/đỏ ngầu · nổ→rền/dội/xé/toác/phá tung · gãy→răng rắc/gãy gập/gãy lìa · mở cửa→bật tung/bung/đạp tung · ném→quăng/phóng/vụt/phang · tối→đen kịt/đặc quánh/sập tối · lạnh→buốt/cắt da/cóng/đông cứng · khựng→chết lặng/đứng hình/chôn chân · (lửa/đám đông)lan→liếm/trườn/cuộn/trùm/nuốt/ùa.
+
 ---
 *Kho này chắt lọc từ: Gardner (psychic distance), Deep POV / free indirect discourse, show-don't-tell craft, non-human narrator; dark comedy (Vonnegut, Heller, Kafka, Coen, Nguyễn Huy Thiệp — mỏ vàng deadpan tiếng Việt); visceral action & pacing (Swain scene/sequel, micro-tension, sentence rhythm), body horror có tiết chế. Đã Việt hoá thành thao tác thợ.*
