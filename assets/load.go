@@ -81,6 +81,7 @@ func loadReferences(style string) tools.References {
 		LongformPlanning:  mustRead(referencesFS, "references/longform-planning.md"),
 		Differentiation:   mustRead(referencesFS, "references/differentiation.md"),
 		AntiAITone:        mustRead(referencesFS, "references/anti-ai-tone.md"),
+		CraftBank:         mustRead(referencesFS, "references/craft-bank.md"),
 	}
 	if style != "" && style != "default" {
 		genreDir := "references/genres/" + style + "/"

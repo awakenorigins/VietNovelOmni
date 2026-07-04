@@ -33,6 +33,8 @@ type References struct {
 	Differentiation  string // Tài liệu tham khảo thiết kế phân biệt tổng quát
 	ArcTemplates     string // Mẫu cung truyện theo thể loại (tải theo style, có thể rỗng)
 	AntiAITone       string // Kho tiêu chí chống văn phong AI (writer/editor dùng chung, chú nhập xuyên suốt)
+	// V3
+	CraftBank        string // Kho thủ pháp văn chương chung (POV, show-don't-tell, hài đen, action, pacing, body horror) — chú nhập xuyên suốt cho writer + architect
 }
 
 // ContextTool lắp ráp ngữ cảnh cần thiết cho chương hiện tại.
@@ -409,6 +411,7 @@ func (t *ContextTool) writerReferences(chapter int) map[string]string {
 	add("hook_techniques", t.refs.HookTechniques)
 	add("quality_checklist", t.refs.QualityChecklist)
 	add("anti_ai_tone", t.refs.AntiAITone) // Tiêu chí chống văn phong AI chú nhập xuyên suốt, không cắt theo chương
+	add("craft_bank", t.refs.CraftBank)   // Kho thủ pháp văn chương chú nhập xuyên suốt cho mọi chương
 	if chapter <= 3 {
 		add("chapter_guide", t.refs.ChapterGuide)
 		add("dialogue_writing", t.refs.DialogueWriting)
@@ -437,6 +440,7 @@ func (t *ContextTool) architectReferences() map[string]string {
 	add("style_reference", t.refs.StyleReference)
 	add("arc_templates", t.refs.ArcTemplates)
 	add("anti_ai_tone", t.refs.AntiAITone) // Chống văn phong AI trong đề cương của Kiến trúc sư; cũng bao phủ trường hợp editor đi qua đường Chapter=0
+	add("craft_bank", t.refs.CraftBank)   // Kho thủ pháp văn chương cho Kiến trúc sư khi thiết kế cảnh/nhịp/POV
 	return refs
 }
 
