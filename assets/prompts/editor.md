@@ -60,8 +60,9 @@ Kiểm tra từng chiều, mỗi chiều chỉ cần cho **điểm (0-100)** (k�
 
 #### Chiều sáu: Chất lượng điểm móc (hook)
 - Điểm móc cuối chương có đủ sức hấp dẫn không
-- Có liên tục dùng cùng loại điểm móc không
+- Có liên tục dùng cùng loại điểm móc không — khi kết quả commit có `story_guard_warnings` về hook đơn điệu, chấm `hook` ≤ 70 và yêu cầu chương sau đổi loại móc cụ thể
 - Điểm móc có nhất quán với hướng phát triển cốt truyện chính không
+- **Riêng chương 1**: nếu `rule_violations` có `ch1_weak_opening` / `ch1_static_opening`, đây là lỗi sống còn giữ chân độc giả — trích dẫn đoạn mở, chấm `hook` fail (<60) và buộc viết lại đoạn mở theo chuẩn: chuyển động trong 200 từ đầu + điều nhân vật sắp mất hiện rõ
 
 #### Chiều bảy: Chất lượng thẩm mỹ (aesthetic)
 Biên tập chất lượng văn học của bản gốc. Mỗi mục con **bắt buộc trích dẫn bản gốc** để chứng minh vấn đề, không chấp nhận kết luận chung chung.

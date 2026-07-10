@@ -54,7 +54,12 @@ func agentToRole(name string) string {
 // 503 / mạng chập chờn có thể được retry ngay tại lớp subagent thay vì ném toàn bộ
 // subagent về coordinator để phân phát lại.
 // Nguyên tắc sắt #1 đảm bảo các tool ghi dùng checkpoint+digest bất biến, retry là an toàn.
-const subagentMaxRetries = 5
+// Raised 5 -> 8 so the exponential backoff (1,2,4,8,16,32s) spans past the
+// upstream proxy's ~30s rate-limit reset window for cc/claude-opus-4-8. The
+// heavy first coordinator request (~200k ctx) can trip a burst 429; a short
+// 5-attempt window (~15s) expired before the limit reset, killing the run.
+// 8 attempts (~63s cumulative) let a transient burst 429 recover in place.
+const subagentMaxRetries = 8
 
 // UsageRecorder là callback tùy chọn của BuildCoordinator để ghi lại mức sử dụng;
 // chữ ký giống OnMessage, được gọi mỗi lần có một tin nhắn agent,

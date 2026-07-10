@@ -326,7 +326,7 @@ func (m *failoverModel) GenerateStream(ctx context.Context, messages []agentcore
 					goto retry
 				}
 			}
-			out <- agentcore.StreamEvent{Type: agentcore.StreamEventError, Err: err}
+			out <- agentcore.StreamEvent{Type: agentcore.StreamEventError, Err: wrapTransientRetryable(err)}
 			return
 		}
 		if resp != nil {
@@ -349,6 +349,9 @@ func (m *failoverModel) GenerateStream(ctx context.Context, messages []agentcore
 						current = next
 						goto retry
 					}
+				}
+				if ev.Err != nil && !forwarded {
+					ev.Err = wrapTransientRetryable(ev.Err)
 				}
 				out <- ev
 				return
@@ -403,10 +406,13 @@ func (m *failoverModel) pickFallback(current modelTarget, err error) (modelTarge
 		return modelTarget{}, "", false
 	}
 
-	if !agentcore.IsFailoverEligible(err) {
+	if !agentcore.IsFailoverEligible(err) && !isTransientBadRequest(err) {
 		return modelTarget{}, agentcore.FailoverReason(err), false
 	}
 	reason := agentcore.FailoverReason(err)
+	if reason == "" {
+		reason = "bad_request"
+	}
 	for _, target := range m.fallbacks {
 		if target.provider == current.provider && target.name == current.name {
 			continue
@@ -417,6 +423,79 @@ func (m *failoverModel) pickFallback(current modelTarget, err error) (modelTarge
 		return target, reason, true
 	}
 	return modelTarget{}, reason, false
+}
+
+// isTransientBadRequest reports whether err looks like a transient HTTP 400 /
+// validation / invalid_request blip from an unstable upstream proxy (observed
+// intermittently on some Anthropic-compatible proxies for cc/claude-opus-4-8).
+// These are NOT classified as failover-eligible by agentcore (only
+// rate_limit/timeout/network/stream_idle are), yet a single such blip on the
+// very first coordinator call otherwise kills the whole headless run. We treat
+// them as failover-eligible so the run retries on a fallback target instead of
+// dying. We deliberately exclude genuine client mistakes that must not be
+// retried blindly (context_overflow / auth are handled elsewhere and excluded).
+func isTransientBadRequest(err error) bool {
+	if err == nil {
+		return false
+	}
+	// Never treat context-overflow or auth as a retryable bad request.
+	if agentcore.IsContextOverflow(err) {
+		return false
+	}
+	msg := strings.ToLower(err.Error())
+	if strings.Contains(msg, "401") || strings.Contains(msg, "403") ||
+		strings.Contains(msg, "unauthorized") || strings.Contains(msg, "forbidden") {
+		return false
+	}
+	if !strings.Contains(msg, "400") {
+		return false
+	}
+	return containsAnyBadReq(msg, "bad request", "invalid_request", "invalid request", "validation", "validate")
+}
+
+func containsAnyBadReq(msg string, patterns ...string) bool {
+	for _, p := range patterns {
+		if strings.Contains(msg, p) {
+			return true
+		}
+	}
+	// A plain 400 with no clearer marker is still a transient upstream blip in
+	// practice; allow failover rather than hard-killing the run.
+	return true
+}
+
+// retryableTransientError wraps a transient upstream error (burst 429 or a
+// flaky 400 validation blip from an unstable cc/claude-opus-4-8 proxy) so that
+// agentcore's outer callLLMWithRetry loop treats it as retryable. Without this,
+// a 400 is non-retryable at the loop level and a single blip kills the whole
+// headless run at 0 chapters even though a re-issue would succeed. It satisfies
+// agentcore's RetryableError interface (Retryable() bool).
+type retryableTransientError struct{ err error }
+
+func (e *retryableTransientError) Error() string { return e.err.Error() }
+func (e *retryableTransientError) Unwrap() error  { return e.err }
+func (e *retryableTransientError) Retryable() bool { return true }
+
+// wrapTransientRetryable marks burst-429 and transient-400 errors as retryable
+// so the outer loop re-issues instead of dying. Auth (401/403), context
+// overflow, and user cancellation are left untouched (never blindly retried).
+func wrapTransientRetryable(err error) error {
+	if err == nil {
+		return nil
+	}
+	if errors.Is(err, context.Canceled) || agentcore.IsContextOverflow(err) {
+		return err
+	}
+	msg := strings.ToLower(err.Error())
+	if strings.Contains(msg, "401") || strings.Contains(msg, "403") ||
+		strings.Contains(msg, "unauthorized") || strings.Contains(msg, "forbidden") {
+		return err
+	}
+	// Burst rate-limit or transient bad-request/validation blip -> retryable.
+	if agentcore.IsFailoverEligible(err) || isTransientBadRequest(err) {
+		return &retryableTransientError{err: err}
+	}
+	return err
 }
 
 func (m *failoverModel) reportFailover(from, to modelTarget, reason string, err error) {

@@ -115,6 +115,32 @@ func (t *CommitChapterTool) runPostCommitHook(chapter int) {
 type auditReport struct {
 	Chapter int  `json:"chapter"`
 	PassAll bool `json:"pass_all"`
+	Results map[string]struct {
+		Parsed *struct {
+			HardErrors []string `json:"hard_errors"`
+		} `json:"parsed"`
+	} `json:"results"`
+}
+
+// auditFailDetail rút lý do fail cụ thể từ report để writer vá CÓ MỤC TIÊU thay vì
+// viết lại mò (rewrite mù dễ fail lần hai rồi buông). Giới hạn 3 lỗi đầu cho gọn.
+func auditFailDetail(rep auditReport) string {
+	var details []string
+	for _, r := range rep.Results {
+		if r.Parsed == nil {
+			continue
+		}
+		for _, e := range r.Parsed.HardErrors {
+			if strings.HasPrefix(e, "markdown") {
+				continue // markdown không tính fail cứng (đồng bộ với hook)
+			}
+			details = append(details, e)
+			if len(details) >= 3 {
+				return strings.Join(details, "; ") + "…"
+			}
+		}
+	}
+	return strings.Join(details, "; ")
 }
 
 // applyAuditFeedback đọc report audit của chương và đóng vòng phản hồi:
@@ -145,6 +171,9 @@ func (t *CommitChapterTool) applyAuditFeedback(chapter int, outDir string) {
 	}
 
 	reason := fmt.Sprintf("skill-audit fail (ch%02d): xem %s", chapter, reportPath)
+	if detail := auditFailDetail(rep); detail != "" {
+		reason = fmt.Sprintf("skill-audit fail (ch%02d) — lỗi cụ thể phải vá: %s (chi tiết: %s)", chapter, detail, reportPath)
+	}
 	if err := t.store.Progress.EnqueueRewrite(chapter, reason); err != nil {
 		slog.Warn("không đưa được chương vào hàng đợi viết lại (không chặn)", "module", "omni-hook", "chapter", chapter, "err", err)
 		return
@@ -159,7 +188,8 @@ func (t *CommitChapterTool) applyAuditFeedback(chapter int, outDir string) {
 // Vì trường nhúng được JSON marshaler đưa lên cấp trên (promoted), kết quả serialize tương đương cấu trúc phẳng.
 type commitOutput struct {
 	domain.CommitResult
-	RuleViolations []rules.Violation `json:"rule_violations,omitempty"`
+	RuleViolations     []rules.Violation `json:"rule_violations,omitempty"`
+	StoryGuardWarnings []string          `json:"story_guard_warnings,omitempty"` // VietNovelOmni: cảnh báo biên kịch advisory (hook đơn điệu...)
 }
 
 func (t *CommitChapterTool) Name() string { return "commit_chapter" }
@@ -492,10 +522,28 @@ func (t *CommitChapterTool) Execute(_ context.Context, args json.RawMessage) (js
 	// 11. Kiểm tra quy tắc cơ học (chỉ trả về dữ liệu thực tế, không chặn)
 	violations := t.checkRules(content, wordCount)
 
+	// 11b. VietNovelOmni — guard biên kịch advisory (loop-safe: chỉ phát tín hiệu, không chặn).
+	// Chương 1 = cửa sinh tử giữ chân độc giả: soi mở đầu sáo + mở đầu tĩnh.
+	if a.Chapter == 1 {
+		violations = append(violations, firstChapterHookIssues(content)...)
+	}
+	// Hook đơn điệu: cùng loại móc lặp liên tiếp — trả cảnh báo trong kết quả commit để coordinator/writer chương sau thấy.
+	var storyGuardWarnings []string
+	if progress != nil {
+		hist := progress.HookHistory
+		if len(hist) > 0 {
+			hist = hist[:len(hist)-1] // bỏ mục của chính chương vừa MarkChapterComplete
+		}
+		if w := hookMonotonyWarning(hist, a.HookType); w != "" {
+			storyGuardWarnings = append(storyGuardWarnings, w)
+			slog.Warn("hook monotony", "module", "story-guard", "chapter", a.Chapter, "hook", a.HookType)
+		}
+	}
+
 	// 12. OmniNovel post-commit hook: audit chương qua toàn bộ skill (best-effort, không chặn).
 	t.runPostCommitHook(a.Chapter)
 
-	return json.Marshal(commitOutput{CommitResult: result, RuleViolations: violations})
+	return json.Marshal(commitOutput{CommitResult: result, RuleViolations: violations, StoryGuardWarnings: storyGuardWarnings})
 }
 
 // checkRules kiểm tra cơ học nội dung chương: Lint giới hạn tối thiểu tích hợp sẵn (kiểm tra cơ chế tồn dư, luôn thực thi)
