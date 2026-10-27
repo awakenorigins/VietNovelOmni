@@ -1,0 +1,23 @@
+# OUMStudio-Novel — ISOLATED deploy stack
+# Dedicated image + dedicated named volumes. Does NOT bind any port,
+# does NOT share networks/volumes with other stacks on this VPS.
+name: oumstudio-novel
+
+services:
+  oumstudio:
+    image: oumstudio-novel:1.2.0-omni
+    container_name: oumstudio-novel
+    restart: "no"            # CLI engine — run on demand, not a daemon
+    stdin_open: true
+    tty: true
+    volumes:
+      - oumstudio-config:/root/.ainovel       # isolated config (seeded copy)
+      - oumstudio-workspace:/workspace        # isolated output store
+    working_dir: /workspace
+    # No ports: CLI engine. No external network exposure.
+
+volumes:
+  oumstudio-config:
+    external: true
+  oumstudio-workspace:
+    external: true

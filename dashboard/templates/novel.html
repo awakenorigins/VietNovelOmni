@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{{if .Job}}<meta http-equiv="refresh" content="20">{{end}}
+<title>{{.Title}} — VietNovelOmni</title>
+<style>
+  :root{
+    --bg:#0E0D0B; --surface:#171512; --surface2:#1F1C17; --line:#2E2A22;
+    --gold:#C9A96E; --gold-soft:#E8D5B0; --ink:#EDE7DC; --muted:#9A9184;
+    --green:#7FA870; --warn:#d99a6e; --fail:#c96e6e;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans","Liberation Sans",sans-serif;
+    line-height:1.65; padding:0 0 3rem; }
+  .wrap { max-width:1100px; margin:0 auto; padding:0 1.1rem; }
+  a { color:var(--gold); text-decoration:none; }
+  a:hover { color:var(--gold-soft); }
+  header{position:relative;padding:2.6rem 0 1.8rem;margin-bottom:1.6rem;overflow:hidden;
+    background:
+      linear-gradient(180deg,rgba(14,13,11,.8) 0%,rgba(14,13,11,.55) 50%,rgba(14,13,11,.95) 100%),
+      url('/static/art/reading-lamp.jpg') center 30%/cover no-repeat;
+    border-bottom:1px solid var(--line)}
+  header .in{max-width:1100px;margin:0 auto;padding:0 1.1rem;position:relative;z-index:1}
+  h1 { font-family:Georgia,"Times New Roman",serif;font-size:1.85rem;text-shadow:0 2px 16px rgba(0,0,0,.9); }
+  .crumb { font-size:.85rem; color:#c9c0b0; margin-bottom:.5rem;text-shadow:0 1px 8px rgba(0,0,0,.9); }
+  .genres { margin-top:.5rem; }
+  .genres b { display:inline-block; background:rgba(31,28,23,.8); color:var(--gold-soft); font-weight:500;
+    border:1px solid var(--line); border-radius:999px; padding:.02rem .65rem; font-size:.76rem; margin-right:.3rem; }
+  .note{ color:var(--muted); font-size:.85rem; }
+  header .note{color:#b8b0a0;text-shadow:0 1px 8px rgba(0,0,0,.9)}
+  .flash { padding:.7rem 1rem; border-radius:10px; margin-bottom:1.2rem; font-size:.92rem; border:1px solid; }
+  .flash.ok { background:rgba(127,168,112,.12); color:var(--green); border-color:rgba(127,168,112,.4); }
+  .flash.err { background:rgba(201,110,110,.12); color:var(--fail); border-color:rgba(201,110,110,.4); }
+  .genbox { background:linear-gradient(120deg,rgba(127,168,112,.1),var(--surface)); border:1px solid rgba(127,168,112,.4);
+    border-radius:10px; padding:.9rem 1.2rem; margin-bottom:1.4rem; }
+  .genbox b { color:var(--green); }
+  .meta { display:flex; flex-wrap:wrap; gap:.7rem; margin:0 0 1.8rem; }
+  .meta .item { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:.6rem 1.05rem; min-width:126px; }
+  .meta .k { display:block; font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; }
+  .meta .v { font-size:1.15rem; font-weight:700; color:var(--gold-soft); font-variant-numeric:tabular-nums; }
+  .badge { display:inline-block; border-radius:999px; padding:.05rem .6rem; font-size:.76rem; font-weight:600; }
+  .badge.warn { background:rgba(176,101,58,.18); color:var(--warn); border:1px solid rgba(176,101,58,.5); }
+  .badge.gray { background:var(--surface2); color:var(--muted); border:1px solid var(--line); }
+  .badge.ok { background:rgba(127,168,112,.15); color:var(--green); border:1px solid rgba(127,168,112,.5); }
+  .badge.fail { background:rgba(201,110,110,.15); color:var(--fail); border:1px solid rgba(201,110,110,.5); }
+  h2 { font-size:1.15rem; margin:1.8rem 0 .8rem; border-left:4px solid var(--gold); padding-left:.65rem; color:var(--gold-soft); }
+  table { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:.9rem; }
+  th, td { padding:.55rem .7rem; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:var(--surface2); font-size:.76rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(201,169,110,.05); }
+  .num { text-align:right; font-variant-numeric:tabular-nums; }
+  .scores { font-size:.8rem; color:var(--muted); }
+  .scores b { color:var(--gold-soft); }
+  .skilllist { font-size:.76rem; }
+  .skilllist .s { display:inline-block; margin:.1rem .25rem .1rem 0; padding:.02rem .5rem; border-radius:999px;
+    background:rgba(127,168,112,.12); color:var(--green); border:1px solid rgba(127,168,112,.35); }
+  .skilllist .s.f { background:rgba(201,110,110,.12); color:var(--fail); border-color:rgba(201,110,110,.35); }
+  .export { position:relative; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:1.4rem; overflow:hidden; }
+  .export::before{content:"";position:absolute;inset:0;opacity:.08;pointer-events:none;
+    background:url('/static/art/plum-moon.jpg') right center/contain no-repeat}
+  .export form,.export h2,.export ul{position:relative;z-index:1}
+  .export .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.9rem; }
+  .export label { display:block; font-weight:600; font-size:.84rem; margin-bottom:.25rem; color:var(--gold-soft); }
+  .export input, .export select, .export textarea { width:100%; padding:.5rem .75rem; border:1px solid var(--line);
+    border-radius:9px; background:var(--surface2); color:var(--ink); font-size:.9rem; font-family:inherit; outline:none; }
+  .export input:focus,.export select:focus,.export textarea:focus{border-color:var(--gold)}
+  .export textarea { min-height:70px; resize:vertical; }
+  .export .full { grid-column:1 / -1; }
+  .export .actions { margin-top:1.15rem; text-align:center; }
+  .export button { background:linear-gradient(110deg,var(--gold) 40%,var(--gold-soft) 50%,var(--gold) 60%);
+    background-size:250% 100%; color:#1a1408; border:none; border-radius:11px;
+    padding:.72rem 2.4rem; font-size:1rem; font-weight:700; cursor:pointer; animation:shimmer 3.2s linear infinite; }
+  @keyframes shimmer{to{background-position:-250% 0}}
+  .export button:hover { opacity:.92; }
+  .exports li { margin:.3rem 0; }
+  footer { margin-top:3rem; text-align:center; color:var(--muted); font-size:.78rem; opacity:.75; }
+  @media (max-width:640px){ table{font-size:.78rem;} th,td{padding:.35rem .4rem;} h1{font-size:1.4rem} header{padding:1.8rem 0 1.3rem} }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="in">
+    <div class="crumb"><a href="/">← Thư viện</a> · <a href="/jobs">Tiến trình</a> · <a href="/library">Album EPUB</a></div>
+    <h1>{{.Title}}</h1>
+    {{if .Book.Genres}}<div class="genres">{{range .Book.Genres}}<b>{{.}}</b>{{end}}{{if .Book.Author}} <span class="note">· {{.Book.Author}}</span>{{end}}{{if .Book.Series}} <span class="note">· {{.Book.Series}}</span>{{end}}</div>{{end}}
+  </div>
+</header>
+<div class="wrap">
+
+  {{if .Flash.Msg}}<div class="flash ok">✅ {{.Flash.Msg}}</div>{{end}}
+  {{if .Flash.Err}}<div class="flash err">⚠️ {{.Flash.Err}}</div>{{end}}
+
+  {{if .Job}}
+  <div class="genbox">🖋 <b>Đang viết…</b> engine chạy nền (bắt đầu {{.Job.StartedAt.Format "15:04 02/01"}}) —
+    <a href="/jobs/{{.Job.ID}}/log" target="_blank">xem log</a>. Trang tự làm mới mỗi 20 giây.</div>
+  {{end}}
+
+  <div class="meta">
+    <div class="item"><span class="k">Trạng thái</span><span class="v">{{if .Job}}ĐANG VIẾT{{else if .Status}}{{.Status}}{{else}}—{{end}}</span></div>
+    {{if .Phase}}<div class="item"><span class="k">Phase</span><span class="v">{{.Phase}}</span></div>{{end}}
+    {{if .Flow}}<div class="item"><span class="k">Flow</span><span class="v">{{.Flow}}</span></div>{{end}}
+    <div class="item"><span class="k">Chương</span><span class="v">{{.CompletedChapters}} / {{.TotalChapters}}</span></div>
+    <div class="item"><span class="k">Tổng từ</span><span class="v">{{.TotalWords}}</span></div>
+    <div class="item"><span class="k">Chờ viết lại</span><span class="v">{{.PendingRewrites}}</span></div>
+    {{if .CurrentVolume}}<div class="item"><span class="k">Volume</span><span class="v">{{.CurrentVolume}}</span></div>{{end}}
+    {{if .CurrentArc}}<div class="item"><span class="k">Arc</span><span class="v">{{.CurrentArc}}</span></div>{{end}}
+  </div>
+
+  {{if .PendingRewrite}}
+  <h2>Chờ viết lại</h2>
+  <p class="note">{{range $i, $p := .PendingRewrite}}{{if $i}}, {{end}}{{$p}}{{end}}</p>
+  {{end}}
+
+  <h2>Danh sách chương</h2>
+  {{if .Chapters}}
+  <table>
+    <thead>
+      <tr><th>Ch.</th><th>Tiêu đề / dòng đầu</th><th class="num">Số từ</th><th>Trạng thái</th><th>Review 7 chiều</th><th>Skill-audit</th><th></th></tr>
+    </thead>
+    <tbody>
+      {{range .Chapters}}
+      <tr>
+        <td class="num">{{.Number}}</td>
+        <td>{{if .Title}}{{.Title}}{{else}}<span class="note">{{.File}}</span>{{end}}</td>
+        <td class="num">{{.Words}}</td>
+        <td>
+          {{if eq .Status "hoàn thành"}}<span class="badge ok">hoàn thành</span>
+          {{else if eq .Status "cần viết lại"}}<span class="badge warn">cần viết lại</span>
+          {{else}}<span class="badge gray">{{.Status}}</span>{{end}}
+        </td>
+        <td>
+          {{if .Review.Found}}
+            <div class="scores"><b>TB {{.Review.Average}}</b>{{if .Review.Verdict}} · {{.Review.Verdict}}{{end}}</div>
+            <div class="scores">{{range $k, $v := .Review.Scores}}{{$k}}: <b>{{$v}}</b> · {{end}}</div>
+          {{else}}<span class="note">chưa có</span>{{end}}
+        </td>
+        <td>
+          {{if .Audit.Found}}
+            {{if .Audit.PassAll}}{{if deref .Audit.PassAll}}<span class="badge ok">PASS ALL</span>{{else}}<span class="badge fail">FAIL</span>{{end}}{{end}}
+            <div class="skilllist">{{range $k, $v := .Audit.Skills}}<span class="s{{if not $v}} f{{end}}">{{$k}}</span>{{end}}</div>
+          {{else}}<span class="note">chưa có</span>{{end}}
+        </td>
+        <td><a href="/novel/{{$.Slug}}/chapter/{{.Number}}">Đọc</a></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="note">Chưa có chương nào{{if .Job}} — engine đang viết, chương đầu sẽ xuất hiện ở đây{{end}}.</p>
+  {{end}}
+
+  <h2>Xuất EPUB</h2>
+  <div class="export">
+    <form method="post" action="/novel/{{.Slug}}/export">
+      <div class="grid">
+        <div><label>Từ chương</label><input type="number" name="from" min="0" placeholder="đầu"></div>
+        <div><label>Đến chương</label><input type="number" name="to" min="0" placeholder="cuối"></div>
+        <div><label>Audit gate</label>
+          <select name="audit_gate">
+            <option value="off">off — xuất thẳng</option>
+            <option value="warn" selected>warn — cảnh báo vẫn xuất</option>
+            <option value="block">block — chặn nếu fail</option>
+          </select>
+        </div>
+        <div><label>Tác giả</label><input type="text" name="author" value="{{.Book.Author}}" placeholder="Tiểu Tâm"></div>
+        <div><label>Bộ sách</label><input type="text" name="series" value="{{.Book.Series}}"></div>
+        <div><label>Phụ đề</label><input type="text" name="subtitle"></div>
+        <div class="full"><label>Lời tựa <span class="note">— tùy chọn, thành trang riêng trong EPUB</span></label>
+          <textarea name="preface"></textarea></div>
+        <div class="full"><label>Lời bạt <span class="note">— tùy chọn</span></label>
+          <textarea name="afterword"></textarea></div>
+      </div>
+      <div class="actions"><button type="submit">📖 Xuất EPUB</button>
+        <div class="note" style="margin-top:.5rem">EPUB 3 đầy đủ: bìa, trang tựa, bản quyền, lời tựa, mục lục, chương, lời bạt, về tác giả (trang thiếu dữ liệu tự bỏ qua). Cần đăng nhập admin.</div>
+      </div>
+    </form>
+    {{if .Exports}}
+    <h2 style="margin-top:1.4rem">File đã xuất</h2>
+    <ul class="exports">
+      {{range .Exports}}<li>📕 <a href="/download/{{$.Slug}}/{{.}}">{{.}}</a></li>{{end}}
+    </ul>
+    {{end}}
+  </div>
+
+  <footer>VietNovelOmni · Thư Cổ Kỳ Phong · <a href="/api/novels/{{.Slug}}">JSON API</a></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{{if .State.Enabled}}<meta http-equiv="refresh" content="20">{{end}}
+<title>AUTO — VietNovelOmni</title>
+<style>
+  :root { --bg:#0E0D0B; --accent:#C9A96E; --ink:#EDE7DC; --surface:#171512; --surface2:#1F1C17; --line:#2E2A22; --muted:#9A9184; --goldsoft:#E8D5B0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans","Liberation Sans",sans-serif;
+    line-height:1.6; padding:2rem 1rem; }
+  .wrap { max-width:840px; margin:0 auto; }
+  header { border-bottom:1px solid var(--line); padding:1.6rem 1rem 1.2rem; margin:-2rem -1rem 1.6rem; background:linear-gradient(180deg,rgba(14,13,11,.82),rgba(14,13,11,.94)),url('/static/art/dragon-mist.jpg') center 40%/cover no-repeat; }
+  header h1, header .sub, header a, header div { text-shadow:0 1px 10px rgba(0,0,0,.9); }
+  h1 { font-size:1.6rem; } h1 span { color:var(--accent); }
+  .back { color:var(--muted); text-decoration:none; font-size:.88rem; }
+  .flash { padding:.7rem 1rem; border-radius:8px; margin-bottom:1.2rem; font-size:.92rem; }
+  .flash.ok { background:#e4eede; color:#3c5a2e; border:1px solid #bed3ae; }
+  .flash.err { background:#f7e2dc; color:#8b3a26; border:1px solid #e3b8ab; }
+  .panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:1.6rem; margin-bottom:1.4rem; }
+  .status { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; }
+  .stat { text-align:center; background:rgba(201,169,110,.05); border:1px solid #ece5da; border-radius:10px; padding:.8rem; }
+  .stat b { display:block; font-size:1.5rem; color:var(--accent); }
+  .stat span { font-size:.8rem; color:var(--muted); }
+  .live { color:#4e7a4e; font-weight:600; animation:pulse 1.6s infinite; }
+  @keyframes pulse { 50% { opacity:.55; } }
+  label { display:block; font-weight:600; margin:1.1rem 0 .3rem; font-size:.95rem; }
+  .hint { font-weight:400; color:var(--muted); font-size:.8rem; }
+  input[type=text], input[type=number] { width:100%; padding:.55rem .8rem; border:1px solid var(--line);
+    border-radius:8px; background:var(--surface2); font-size:.95rem; font-family:inherit; }
+  .genres { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:.35rem; margin-top:.4rem; }
+  .genres label { display:flex; align-items:center; gap:.45rem; font-weight:400; margin:0;
+    background:rgba(201,169,110,.05); border:1px solid #ece5da; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-size:.88rem; }
+  .genres label:has(input:checked) { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+  .check { display:flex; align-items:center; gap:.5rem; font-weight:400; margin-top:.6rem; }
+  .actions { margin-top:1.6rem; display:flex; gap:.8rem; justify-content:center; flex-wrap:wrap; }
+  button { border:none; border-radius:10px; padding:.75rem 2.2rem; font-size:1rem; font-weight:600; cursor:pointer; }
+  .go { background:#4e7a4e; color:#fff; }
+  .stop { background:#b0653a; color:#fff; }
+  .kill { background:#a33d2b; color:#fff; }
+  button:hover { opacity:.9; }
+  .note { margin-top:1rem; color:var(--muted); font-size:.82rem; }
+  @media (max-width:560px){ .row,.row3 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="/">← Thư viện</a>
+    <h1>Chế độ <span>AUTO</span> — tự seeding, tự viết, tự xuất bản</h1>
+  </header>
+
+  {{if .Flash.Msg}}<div class="flash ok">✅ {{.Flash.Msg}}</div>{{end}}
+  {{if .Flash.Err}}<div class="flash err">⚠️ {{.Flash.Err}}</div>{{end}}
+
+  <div class="panel">
+    <div class="status">
+      <div class="stat"><b>{{if .State.Enabled}}<span class="live">ĐANG CHẠY</span>{{else}}TẮT{{end}}</b><span>trạng thái</span></div>
+      <div class="stat"><b>{{.State.Stats.Done}}</b><span>truyện xong</span></div>
+      <div class="stat"><b>{{.State.Stats.Failed}}</b><span>lỗi</span></div>
+      <div class="stat"><b>{{if eq .State.Mode "infinite"}}∞{{else}}{{.State.Remaining}}{{end}}</b><span>còn lại</span></div>
+      <div class="stat"><b>{{.SeedCount}}</b><span>seed đã dùng (vĩnh viễn)</span></div>
+    </div>
+    {{if .State.CurrentTitle}}
+    <p style="margin-top:1rem">✍️ Đang viết: <b>{{.State.CurrentTitle}}</b> <a class="back" href="/novel/{{.State.CurrentSlug}}">(xem)</a></p>
+    {{end}}
+    {{if .State.Note}}<p class="note">📝 {{.State.Note}}</p>{{end}}
+    {{if .State.Enabled}}
+    <div class="actions">
+      <form method="post" action="/auto/stop"><button class="stop" type="submit">⏹ Dừng mềm</button></form>
+      <form method="post" action="/auto/stop"><input type="hidden" name="emergency" value="1">
+        <button class="kill" type="submit">🛑 Dừng khẩn (hủy job hiện tại)</button></form>
+    </div>
+    {{end}}
+  </div>
+
+  {{if not .State.Enabled}}
+  <form class="panel" method="post" action="/auto/start">
+    <label>Thể loại cho phép <span class="hint">— mỗi truyện chọn ngẫu nhiên 1-2 thể loại từ danh sách; bỏ trống = tất cả</span></label>
+    <div class="genres">
+      {{range .Genres}}
+      <label><input type="checkbox" name="genres" value="{{.}}"{{if index $.Allowed .}} checked{{end}}> {{.}}</label>
+      {{end}}
+    </div>
+
+    <div class="row3">
+      <div>
+        <label>Chương tối thiểu</label>
+        <input type="number" name="ch_min" value="{{if .State.ChMin}}{{.State.ChMin}}{{else}}5{{end}}" min="1" max="200">
+      </div>
+      <div>
+        <label>Chương tối đa</label>
+        <input type="number" name="ch_max" value="{{if .State.ChMax}}{{.State.ChMax}}{{else}}15{{end}}" min="1" max="200">
+      </div>
+      <div>
+        <label>Nghỉ giữa 2 truyện (giây)</label>
+        <input type="number" name="pause_sec" value="{{if .State.PauseSec}}{{.State.PauseSec}}{{else}}60{{end}}" min="5" max="86400">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Số truyện muốn gen</label>
+        <input type="number" name="count" value="3" min="1" max="1000">
+        <label class="check"><input type="checkbox" name="infinite"> Vô cực ∞ (chạy liên tục tới khi bấm Dừng)</label>
+      </div>
+      <div>
+        <label>Tác giả mặc định</label>
+        <input type="text" name="author" value="{{if .State.Author}}{{.State.Author}}{{else}}Tiểu Tâm{{end}}" maxlength="80">
+        <label class="check"><input type="checkbox" name="auto_export" checked> Tự xuất EPUB + xếp album khi xong</label>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="go" type="submit">▶ Bắt đầu AUTO</button>
+    </div>
+    <div class="note">An toàn: tối đa 1 job gen cùng lúc (xếp hàng) · tự dừng nếu đĩa &gt;90% · seed đã dùng không bao giờ tái dùng (registry vĩnh viễn).</div>
+  </form>
+  {{end}}
+</div>
+</body>
+</html>

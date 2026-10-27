@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VietNovelOmni — Xưởng Đúc Truyện</title>
+<style>
+  :root{
+    --bg:#0E0D0B; --surface:#171512; --surface2:#1F1C17; --line:#2E2A22;
+    --gold:#C9A96E; --gold-soft:#E8D5B0; --ink:#EDE7DC; --muted:#9A9184;
+    --red:#B0653A; --green:#7FA870; --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--ink);line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans","Liberation Sans",sans-serif;
+    padding-bottom:4.5rem}
+  a{color:inherit}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 1.1rem}
+
+  /* ── Topbar ── */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(14,13,11,.88);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line)}
+  .topbar .in{max-width:1120px;margin:0 auto;padding:.7rem 1.1rem;display:flex;align-items:center;gap:1.2rem}
+  .brand{font-weight:800;font-size:1.15rem;letter-spacing:.02em;text-decoration:none;white-space:nowrap}
+  .brand b{color:var(--gold)}
+  .navlinks{display:flex;gap:.2rem;margin-left:auto}
+  .navlinks a{padding:.42rem .85rem;border-radius:9px;text-decoration:none;font-size:.88rem;color:var(--muted);
+    position:relative;transition:color .15s,background .15s}
+  .navlinks a:hover{color:var(--ink);background:var(--surface2)}
+  .navlinks a.on{color:var(--gold-soft)}
+  .navlinks a.on::after{content:"";position:absolute;left:.85rem;right:.85rem;bottom:.1rem;height:2px;
+    background:var(--gold);border-radius:2px}
+  .cta{background:linear-gradient(110deg,var(--gold) 40%,#E8D5B0 50%,var(--gold) 60%);
+    background-size:250% 100%;color:#1a1408!important;font-weight:700;
+    animation:shimmer 3.2s linear infinite}
+  @keyframes shimmer{to{background-position:-250% 0}}
+  .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);
+    margin-left:.3rem;vertical-align:middle;animation:pulse 1.5s infinite}
+  @keyframes pulse{50%{opacity:.35;transform:scale(.8)}}
+
+  /* ── Hero strip ── */
+  .hero{position:relative;padding:3.4rem 0 2.6rem;overflow:hidden;border-bottom:1px solid var(--line);
+    background:
+      linear-gradient(180deg,rgba(14,13,11,.82) 0%,rgba(14,13,11,.62) 45%,rgba(14,13,11,.94) 100%),
+      url('/static/art/hero-lizai.jpg') center 38%/cover no-repeat}
+  .hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 70% 80% at 50% 110%,rgba(201,169,110,.14),transparent 65%)}
+  .hero .wrap{position:relative;z-index:1}
+  .hero h1{font-family:Georgia,"Times New Roman",serif;font-size:2rem;font-weight:700;letter-spacing:.01em;
+    text-shadow:0 2px 18px rgba(0,0,0,.85)}
+  .hero h1 b{color:var(--gold)}
+  .hero .sub{color:#c9c0b0;font-size:.95rem;margin-top:.25rem;text-shadow:0 1px 10px rgba(0,0,0,.9)}
+  .stats{display:flex;gap:2.4rem;flex-wrap:wrap;margin-top:1.4rem}
+  .stat .n{font-size:1.9rem;font-weight:800;color:var(--gold-soft);font-variant-numeric:tabular-nums;
+    text-shadow:0 2px 14px rgba(0,0,0,.9)}
+  .stat .l{font-size:.8rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+
+  /* ── Auto banner ── */
+  .autoline{display:flex;align-items:center;gap:.6rem;margin:1.1rem 0 0;padding:.6rem 1rem;
+    background:linear-gradient(120deg,rgba(127,168,112,.12),var(--surface));
+    border:1px solid rgba(127,168,112,.4);border-radius:10px;font-size:.9rem}
+  .autoline a{color:var(--green)}
+
+  /* ── Toolbar ── */
+  .toolbar{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:1.5rem 0 1.2rem}
+  .chip{padding:.28rem .9rem;border-radius:999px;background:var(--surface);border:1px solid var(--line);
+    color:var(--muted);text-decoration:none;font-size:.84rem;transition:all .15s}
+  .chip:hover{border-color:var(--gold);color:var(--gold-soft)}
+  .chip.on{background:var(--gold);color:#1a1408;border-color:var(--gold);font-weight:600}
+  .chip small{opacity:.7}
+  .search{margin-left:auto}
+  .search input{padding:.45rem .95rem;border:1px solid var(--line);border-radius:999px;
+    background:var(--surface);color:var(--ink);font-size:.88rem;width:200px;outline:none;transition:border .15s}
+  .search input:focus{border-color:var(--gold)}
+  .search input::placeholder{color:var(--muted)}
+
+  /* ── Bento grid ── */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem}
+  .card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:1.25rem 1.35rem;display:block;text-decoration:none;color:var(--ink);overflow:hidden;
+    transition:transform .18s,border-color .18s}
+  .card:hover{transform:translateY(-3px);border-color:rgba(201,169,110,.5)}
+  .card::before{content:"";position:absolute;inset:0;border-radius:inherit;opacity:0;transition:opacity .25s;
+    background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(201,169,110,.13),transparent 45%);
+    pointer-events:none}
+  .card:hover::before{opacity:1}
+  .card.writing{border-color:rgba(127,168,112,.55);
+    background:linear-gradient(165deg,rgba(127,168,112,.07),var(--surface) 55%)}
+  .card h2{font-family:Georgia,"Times New Roman",serif;font-size:1.22rem;margin-bottom:.4rem;line-height:1.35}
+  .card h2 a{text-decoration:none}
+  .genres{margin-bottom:.7rem}
+  .genres b{display:inline-block;background:var(--surface2);color:var(--gold-soft);font-weight:500;
+    border:1px solid var(--line);border-radius:999px;padding:.02rem .6rem;font-size:.73rem;margin:0 .25rem .25rem 0}
+  .kv{display:flex;justify-content:space-between;font-size:.86rem;padding:.18rem 0;color:var(--muted)}
+  .kv b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .badge{display:inline-block;border-radius:999px;padding:.06rem .65rem;font-size:.74rem;font-weight:600;
+    letter-spacing:.04em}
+  .badge.done{background:rgba(201,169,110,.16);color:var(--gold-soft);border:1px solid rgba(201,169,110,.4)}
+  .badge.gray{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+  .badge.warn{background:rgba(176,101,58,.18);color:#d99a6e;border:1px solid rgba(176,101,58,.5)}
+  .badge.live{background:rgba(127,168,112,.16);color:var(--green);border:1px solid rgba(127,168,112,.5);
+    animation:pulse 1.6s infinite}
+  .bar{height:6px;background:var(--surface2);border-radius:3px;margin:.75rem 0 .55rem;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#a3844f,var(--gold));
+    transition:width .6s ease}
+  .actions{margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap}
+  .btn{display:inline-block;padding:.3rem .85rem;border-radius:8px;font-size:.8rem;text-decoration:none;
+    border:1px solid var(--line);color:var(--muted);transition:all .15s}
+  .btn:hover{border-color:var(--gold);color:var(--gold-soft)}
+  .btn.gold{background:var(--gold);color:#1a1408;border-color:var(--gold);font-weight:600}
+  .btn.gold:hover{opacity:.9;color:#1a1408}
+  .empty{text-align:center;color:var(--muted);padding:4rem 0}
+  .empty a{color:var(--gold)}
+  footer{margin-top:3.5rem;text-align:center;color:var(--muted);font-size:.78rem;opacity:.7}
+
+  /* ── Mobile bottom tab bar ── */
+  .tabbar{display:none}
+  @media (max-width:640px){
+    .navlinks{display:none}
+    .hero{padding:1.8rem 0 1.6rem}
+    .hero h1{font-size:1.5rem}
+    .stats{gap:1.4rem;margin-top:1rem}
+    .stat .n{font-size:1.5rem}
+    .search{margin-left:0;width:100%}
+    .search input{width:100%}
+    .tabbar{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:60;
+      background:rgba(20,18,15,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+    .tabbar a{flex:1;text-align:center;padding:.55rem 0 .65rem;text-decoration:none;color:var(--muted);
+      font-size:.66rem;line-height:1.3}
+    .tabbar a span{display:block;font-size:1.15rem}
+    .tabbar a.on{color:var(--gold)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar"><div class="in">
+  <a class="brand" href="/">VietNovel<b>Omni</b></a>
+  <nav class="navlinks">
+    <a class="on" href="/">📚 Thư viện</a>
+    <a href="/auto">⚙ Xưởng AUTO{{if .AutoActive}}<span class="live-dot"></span>{{end}}</a>
+    <a href="/library">📖 Album EPUB</a>
+    <a href="/jobs">📈 Tiến trình</a>
+    <a href="/settings">🎛 Model</a>
+    <a class="cta" href="/create">＋ Đúc truyện mới</a>
+  </nav>
+</div></div>
+
+<div class="hero"><div class="wrap">
+  <h1>Xưởng đúc <b>tiểu thuyết Việt</b></h1>
+  <div class="sub">Từ một hạt giống ý tưởng thành cả thư viện · {{.Now}}</div>
+  <div class="stats">
+    <div class="stat"><div class="n" id="st-novels">0</div><div class="l">Truyện</div></div>
+    <div class="stat"><div class="n" id="st-words">0</div><div class="l">Tổng từ</div></div>
+    <div class="stat"><div class="n" id="st-chapters">0</div><div class="l">Chương</div></div>
+  </div>
+  {{if .AutoActive}}
+  <div class="autoline"><span class="badge live">AUTO ĐANG ĐÚC</span>
+    {{if .AutoTitle}}<span>— đang viết: <b>{{.AutoTitle}}</b></span>{{end}}
+    <a href="/auto">vào phòng máy →</a></div>
+  {{end}}
+</div></div>
+
+<div class="wrap">
+  <div class="toolbar">
+    <a class="chip{{if eq .Picked ""}} on{{end}}" href="/">Tất cả</a>
+    {{range .Albums}}
+    <a class="chip{{if eq $.Picked .Name}} on{{end}}" href="/?genre={{.Name}}">{{.Name}} <small>({{.Count}})</small></a>
+    {{end}}
+    <form class="search" method="get" action="/">
+      {{if .Picked}}<input type="hidden" name="genre" value="{{.Picked}}">{{end}}
+      <input type="search" name="q" value="{{.Query}}" placeholder="Tìm truyện…">
+    </form>
+  </div>
+
+  {{if .Novels}}
+  <div class="grid">
+    {{range .Novels}}
+    <div class="card{{if .Generating}} writing{{end}}" data-words="{{.TotalWords}}" data-chapters="{{.CompletedChapters}}">
+      <h2><a href="/novel/{{.Slug}}">{{.Title}}</a></h2>
+      {{if .Genres}}<div class="genres">{{range .Genres}}<b>{{.}}</b>{{end}}</div>{{end}}
+      <div class="kv"><span>Trạng thái</span><span>
+        {{if .Generating}}<span class="badge live">ĐANG VIẾT</span>
+        {{else if eq .Status "COMPLETED"}}<span class="badge done">✦ HOÀN THÀNH</span>
+        {{else if .Status}}<span class="badge gray">{{.Status}}</span>
+        {{else}}<span class="badge gray">—</span>{{end}}
+      </span></div>
+      {{if .Author}}<div class="kv"><span>Tác giả</span><b>{{.Author}}</b></div>{{end}}
+      <div class="kv"><span>Chương</span><b>{{.CompletedChapters}} / {{.TotalChapters}}</b></div>
+      <div class="kv"><span>Tổng từ</span><b>{{.TotalWords}}</b></div>
+      {{if gt .PendingRewrites 0}}<div class="kv"><span>Chờ viết lại</span><span class="badge warn">{{.PendingRewrites}}</span></div>{{end}}
+      <div class="bar"><i style="width:{{if gt .TotalChapters 0}}{{percent .CompletedChapters .TotalChapters}}{{else}}0{{end}}%"></i></div>
+      <div class="actions">
+        <a class="btn" href="/novel/{{.Slug}}">📖 Mở bàn tác giả</a>
+        {{if .LatestExport}}<a class="btn gold" href="/download/{{.Slug}}/{{.LatestExport}}">⬇ EPUB</a>{{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+  {{else}}
+  <div class="empty">Kệ sách còn trống. <a href="/create">Gieo hạt giống đầu tiên →</a></div>
+  {{end}}
+
+  <footer>VietNovelOmni · Xưởng Đúc Truyện Đêm · Thư Cổ Kỳ Phong · tranh cổ Public Domain (MET · Cleveland · Princeton)</footer>
+</div>
+
+<nav class="tabbar">
+  <a class="on" href="/"><span>📚</span>Thư viện</a>
+  <a href="/auto"><span>⚙</span>AUTO</a>
+  <a href="/create"><span>✒️</span>Đúc mới</a>
+  <a href="/library"><span>📖</span>EPUB</a>
+  <a href="/settings"><span>🎛</span>Model</a>
+</nav>
+
+<script>
+(function(){
+  var cards=document.querySelectorAll('.card');
+  var totW=0,totC=0;
+  cards.forEach(function(c){
+    totW+=parseInt(c.dataset.words||'0',10);
+    totC+=parseInt(c.dataset.chapters||'0',10);
+    c.addEventListener('mousemove',function(e){
+      var r=c.getBoundingClientRect();
+      c.style.setProperty('--mx',(e.clientX-r.left)+'px');
+      c.style.setProperty('--my',(e.clientY-r.top)+'px');
+    });
+  });
+  function tick(el,target,dur){
+    if(!el)return;
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=target.toLocaleString('vi-VN');return}
+    var t0=null;
+    function step(ts){
+      if(!t0)t0=ts;
+      var p=Math.min((ts-t0)/dur,1);
+      p=1-Math.pow(1-p,3);
+      el.textContent=Math.round(target*p).toLocaleString('vi-VN');
+      if(p<1)requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  tick(document.getElementById('st-novels'),cards.length,900);
+  tick(document.getElementById('st-words'),totW,1400);
+  tick(document.getElementById('st-chapters'),totC,1100);
+})();
+</script>
+</body>
+</html>

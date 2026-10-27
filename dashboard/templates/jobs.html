@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="15">
+<title>Tiến trình — VietNovelOmni</title>
+<style>
+  :root { --bg:#0E0D0B; --accent:#C9A96E; --ink:#EDE7DC; --surface:#171512; --surface2:#1F1C17; --line:#2E2A22; --muted:#9A9184; --goldsoft:#E8D5B0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans","Liberation Sans",sans-serif;
+    line-height:1.6; padding:2rem 1rem; }
+  .wrap { max-width:920px; margin:0 auto; }
+  header { border-bottom:1px solid var(--line); padding:1.6rem 1rem 1.2rem; margin:-2rem -1rem 1.6rem; background:linear-gradient(180deg,rgba(14,13,11,.82),rgba(14,13,11,.94)),url('/static/art/night-travel.jpg') center 40%/cover no-repeat; }
+  header h1, header .sub, header a, header div { text-shadow:0 1px 10px rgba(0,0,0,.9); }
+  h1 { font-size:1.6rem; } h1 span { color:var(--accent); }
+  .back { color:var(--muted); text-decoration:none; font-size:.88rem; }
+  .flash { padding:.7rem 1rem; border-radius:8px; margin-bottom:1.2rem; font-size:.92rem; }
+  .flash.ok { background:#e4eede; color:#3c5a2e; border:1px solid #bed3ae; }
+  .flash.err { background:#f7e2dc; color:#8b3a26; border:1px solid #e3b8ab; }
+  table { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th, td { padding:.6rem .9rem; text-align:left; font-size:.9rem; border-bottom:1px solid var(--line); }
+  th { background:#f0e8db; color:#6b5a3e; font-weight:600; }
+  tr:last-child td { border-bottom:none; }
+  .badge { display:inline-block; color:#fff; border-radius:12px; padding:.05rem .6rem; font-size:.78rem; }
+  .running { background:#4e7a4e; animation:pulse 1.6s infinite; }
+  .done { background:var(--accent); }
+  .failed { background:#a33d2b; }
+  .cancelled { background:#8d8577; }
+  @keyframes pulse { 50% { opacity:.55; } }
+  a.lnk { color:var(--goldsoft); }
+  form { display:inline; }
+  button { background:#a33d2b; color:#fff; border:none; border-radius:8px; padding:.3rem .8rem; font-size:.8rem; cursor:pointer; }
+  .empty { text-align:center; color:var(--muted); padding:3rem 0; }
+  .note { margin-top:1rem; color:var(--muted); font-size:.8rem; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="/">← Thư viện</a>
+    <h1>Tiến trình <span>sáng tác</span></h1>
+  </header>
+
+  {{if .Flash.Msg}}<div class="flash ok">✅ {{.Flash.Msg}}</div>{{end}}
+  {{if .Flash.Err}}<div class="flash err">⚠️ {{.Flash.Err}}</div>{{end}}
+
+  {{if .Jobs}}
+  <table>
+    <tr><th>Truyện</th><th>Trạng thái</th><th>Thời gian</th><th>Log</th><th></th></tr>
+    {{range .Jobs}}
+    <tr>
+      <td><a class="lnk" href="/novel/{{.Slug}}">{{.Slug}}</a></td>
+      <td><span class="badge {{.Status}}">{{.Status}}</span>{{if .Note}} <small>{{.Note}}</small>{{end}}</td>
+      <td>{{.Dur}}</td>
+      <td><a class="lnk" href="/jobs/{{.ID}}/log" target="_blank">xem log</a></td>
+      <td>{{if eq .Status "running"}}
+        <form method="post" action="/jobs/{{.ID}}/cancel"><button type="submit">✕ Hủy</button></form>
+      {{end}}</td>
+    </tr>
+    {{end}}
+  </table>
+  {{else}}
+  <div class="empty">Chưa có tiến trình nào. <a class="lnk" href="/create">Tạo truyện mới →</a></div>
+  {{end}}
+
+  <div class="note">Trang tự làm mới mỗi 15 giây.</div>
+</div>
+</body>
+</html>

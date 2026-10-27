@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tạo truyện — VietNovelOmni</title>
+<style>
+  :root { --bg:#0E0D0B; --accent:#C9A96E; --ink:#EDE7DC; --surface:#171512; --surface2:#1F1C17; --line:#2E2A22; --muted:#9A9184; --goldsoft:#E8D5B0; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"Noto Sans","Liberation Sans",sans-serif;
+    line-height:1.6; padding:2rem 1rem; }
+  .wrap { max-width:840px; margin:0 auto; }
+  header { border-bottom:1px solid var(--line); padding:1.6rem 1rem 1.2rem; margin:-2rem -1rem 1.6rem; background:linear-gradient(180deg,rgba(14,13,11,.82),rgba(14,13,11,.94)),url('/static/art/plum-moon.jpg') center 40%/cover no-repeat; }
+  header h1, header .sub, header a, header div { text-shadow:0 1px 10px rgba(0,0,0,.9); }
+  h1 { font-size:1.6rem; } h1 span { color:var(--accent); }
+  .back { color:var(--muted); text-decoration:none; font-size:.88rem; }
+  .flash { padding:.7rem 1rem; border-radius:8px; margin-bottom:1.2rem; font-size:.92rem; }
+  .flash.err { background:#f7e2dc; color:#8b3a26; border:1px solid #e3b8ab; }
+  form { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:1.6rem; }
+  label { display:block; font-weight:600; margin:1.1rem 0 .3rem; font-size:.95rem; }
+  label:first-child { margin-top:0; }
+  .hint { font-weight:400; color:var(--muted); font-size:.8rem; }
+  input[type=text], input[type=number], textarea, select {
+    width:100%; padding:.55rem .8rem; border:1px solid var(--line); border-radius:8px;
+    background:var(--surface2); font-size:.95rem; font-family:inherit; }
+  textarea { min-height:120px; resize:vertical; }
+  textarea.big { min-height:180px; }
+  .genres { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:.35rem; margin-top:.4rem; }
+  .genres label { display:flex; align-items:center; gap:.45rem; font-weight:400; margin:0;
+    background:rgba(201,169,110,.05); border:1px solid #ece5da; border-radius:8px; padding:.4rem .6rem; cursor:pointer; font-size:.88rem; }
+  .genres label:has(input:checked) { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .submit { margin-top:1.6rem; text-align:center; }
+  button { background:var(--accent); color:#fff; border:none; border-radius:10px;
+    padding:.8rem 2.6rem; font-size:1.05rem; font-weight:600; cursor:pointer; }
+  button:hover { opacity:.9; }
+  .note { margin-top:1rem; color:var(--muted); font-size:.82rem; text-align:center; }
+  @media (max-width:560px){ .row { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="/">← Thư viện</a>
+    <h1>Tạo truyện <span>mới</span></h1>
+  </header>
+
+  {{if .Flash.Err}}<div class="flash err">⚠️ {{.Flash.Err}}</div>{{end}}
+
+  <form method="post" action="/create">
+    <label>Tên truyện</label>
+    <input type="text" name="title" required maxlength="120" placeholder="Ví dụ: Chiếc Lá Đầu Tiên">
+
+    <label>Seeding / ý tưởng thô <span class="hint">— vài dòng tới vài đoạn, engine tự phát triển</span></label>
+    <textarea name="seeding" class="big" placeholder="Một ông cụ nằm trong bệnh viện, nhìn ra cửa sổ thấy cái cây khô héo trong gió tuyết..."></textarea>
+
+    <label>Kịch bản / outline chi tiết <span class="hint">— tùy chọn; nếu điền, engine bám sát</span></label>
+    <textarea name="script" placeholder="Chương 1: ... Chương 2: ... (hoặc dán outline đầy đủ)"></textarea>
+
+    <label>Thể loại <span class="hint">— chọn nhiều = mix thể loại</span></label>
+    <div class="genres">
+      {{range .Genres}}
+      <label><input type="checkbox" name="genres" value="{{.}}"> {{.}}</label>
+      {{end}}
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Tác giả</label>
+        <input type="text" name="author" value="Tiểu Tâm" maxlength="80">
+      </div>
+      <div>
+        <label>Bộ sách / series <span class="hint">— tùy chọn</span></label>
+        <input type="text" name="series" maxlength="120" placeholder="Tần Số Nacha">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Số chương mục tiêu</label>
+        <input type="number" name="chapters" value="10" min="1" max="200">
+      </div>
+      <div>
+        <label>Từ mỗi chương</label>
+        <input type="text" name="words_per_chapter" value="2000-3000" placeholder="2000-3000">
+      </div>
+    </div>
+
+    <div class="submit">
+      <button type="submit">🖋 Bắt đầu viết</button>
+      <div class="note">Engine chạy nền — theo dõi trong trang Tiến trình. Truyện dài có thể mất nhiều giờ.</div>
+    </div>
+  </form>
+</div>
+</body>
+</html>
