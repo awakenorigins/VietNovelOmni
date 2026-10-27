@@ -1,0 +1,12 @@
+{
+  "lastCheck": "2026-03-12T10:09:00+01:00",
+  "completedChapters": ["ch-00", "ch-01", "ch-02", "ch-03", "ch-04", "ch-05", "ch-06", "ch-07", "ch-08", "ch-09", "ch-10", "ch-11", "ch-12", "ch-13", "ch-14", "ch-15", "ch-16", "ch-17", "ch-18", "ch-19", "ch-20"],
+  "lastBeatReported": "beat-20.5",
+  "lastChapterReported": "ch-20",
+  "totalChapters": 21,
+  "nextChapter": null,
+  "forgeInProgress": false,
+  "status": "COMPLETED",
+  "totalWords": 59375,
+  "completedAt": "2026-03-12T10:09:00+01:00"
+}
